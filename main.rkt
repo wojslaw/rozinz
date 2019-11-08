@@ -76,6 +76,8 @@ plan:
 	)
 }
 
+
+
 (define list-axioms
 	'((= (and #f #f) #f)
 	  (= (or  #f #f) #f)
@@ -170,6 +172,58 @@ plan:
 
 
 
+(provide (contract-out
+		   [gather-input (list? -> list?)]
+		   [validate-input (list? -> list?)]
+		   [valid-input-symbol? (symbol? -> boolean?)]
+))
+
+(define (gather-input)
+  ;; gather from a file? for now, let's just spit out a bunch of ASTs
+  '{
+	(o1
+	  (or  i1 i2 i3)
+	)
+	(o2
+	  (and i1 i2 i3)
+	)
+  }
+)
+
+
+(define (valid-boolvar-symbol? s)
+	(define s (symbol->string s))
+	(define s-1st (string-ref s 0))
+	(define s-tail (substring s 1))
+	(define first-correct?
+	  (or
+	    (eq? s-1st #\i)
+	    (eq? s-1st #\o)
+	    (eq? s-1st #\f) )
+	)
+	(define numbering-correct?
+		(string->number s-tail)
+	)
+	(and
+	  (first-correct?)
+	  (numbering-correct?) )
+)
+
+(define (valid-input-symbol? s)
+	(cond
+		((member s list-base-functions)
+		  s)
+		
+		(else #f)
+	)
+)
+
+
+(define (validate-input in)
+	
+	;TODO: validate stuff
+	in
+)
 
 
 
@@ -178,9 +232,7 @@ plan:
 	(define valid-input (validate-input input-list))
 	(define list-ins  (build-list-ins validated-input))
 	(define list-outs (build-list-outs validated-input))
-
 	(define finished-product (optimize-outs list-outs list-ins))
-
 	finished-product
 )
 
