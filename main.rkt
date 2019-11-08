@@ -1,11 +1,23 @@
 #lang racket
 (require racket/trace)
+(require racket/contract)
 (require errortrace)
 
 
-(define (assert condition)
-	
-  )
+#|
+plan:
+1. validate input
+2. build list of inputs and outputs(with their function)
+3. find repeating terms
+|#
+
+(define (assert condition message)
+	(cond
+	  ( (not condition)
+		(error "assertion fail " message)
+	  )
+	)
+)
 
 ; mayhaps assoc? or hashmap!
 ; TODO: remove global state
@@ -15,11 +27,12 @@
 (define *list-flag* (list)) ; flags shall be defined by the program in some cases, when minimizing functions
 
 
-(struct parsed-outfun (out-symbol boolfun inputs-list truthtable))
-(define (make-parsed-outfun out-symbol boolfun)
-	(assert (symbol? out-symbol))
-	(assert (valid-boolfun? boolfun))
-)
+
+;(struct parsed-outfun (out-symbol boolfun inputs-list truthtable))
+;(define (make-parsed-outfun out-symbol boolfun)
+;	(assert (symbol? out-symbol) "")
+;	(assert (valid-boolfun? boolfun) "")
+;)
 
 ; TODO: truth table
 (struct truth-table (count-input vector-input vector-value))
@@ -154,6 +167,22 @@
 )
 
 
+
+
+
+
+
+
+(define (main1)
+	(define input-list (gather-input)) ;TODO: gather input
+	(define valid-input (validate-input input-list))
+	(define list-ins  (build-list-ins validated-input))
+	(define list-outs (build-list-outs validated-input))
+
+	(define finished-product (optimize-outs list-outs list-ins))
+
+	finished-product
+)
 
 
 
