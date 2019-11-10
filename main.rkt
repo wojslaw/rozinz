@@ -173,12 +173,15 @@ plan:
 
 
 (provide (contract-out
-		   [gather-input (list? -> list?)]
-		   [validate-input (list? -> list?)]
-		   [valid-input-symbol? (symbol? -> boolean?)]
+		   [gather-input (list? . -> . list?)]
+		   [validate-input (list? . -> . list?)]
+		   [valid-input-symbol? (symbol? . -> . boolean?)]
 ))
 
-(define (gather-input)
+
+
+(define (gather-input input-info)
+  ;; TODO: gather from a file or something, instead of being preprogrammed
   ;; gather from a file? for now, let's just spit out a bunch of ASTs
   '{
 	(o1
@@ -220,18 +223,37 @@ plan:
 
 
 (define (validate-input in)
-	
+	(format #t "TODO: actually validate input in (validate-input)")
 	;TODO: validate stuff
 	in
 )
+
+
+(define (build-list-ins input)
+	(remove-duplicates (flatten input))
+)
+
+(define (build-list-outs input)
+  ;TODO
+  (format #t "TODO: code for (build-list-outs ...)")
+  input
+)
+
+
+
+(define (optimize-outs input)
+  ;TODO
+  (format #t "TODO: code for (optimize-outs ...)")
+)
+
 
 
 
 (define (main1)
 	(define input-list (gather-input)) ;TODO: gather input
 	(define valid-input (validate-input input-list))
-	(define list-ins  (build-list-ins validated-input))
-	(define list-outs (build-list-outs validated-input))
+	(define list-ins  (build-list-ins  valid-input))
+	(define list-outs (build-list-outs valid-input))
 	(define finished-product (optimize-outs list-outs list-ins))
 	finished-product
 )
