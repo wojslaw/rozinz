@@ -28,14 +28,33 @@ plan:
 
 
 
-;(struct parsed-outfun (out-symbol boolfun inputs-list truthtable))
 ;(define (make-parsed-outfun out-symbol boolfun)
 ;	(assert (symbol? out-symbol) "")
 ;	(assert (valid-boolfun? boolfun) "")
 ;)
 
+
+
+(define (numerize-boolfun boolfun inputs-list)
+	(error "TODO (numerize-boolfun boolfun inputs-list)")
+)
+(define (number->boolvecvec n)
+	(error "TODO (number->boolvecvec n)")
+)
+(define (evaluate-numerized-boolfun nboolfun boolvec)
+	
+)
 ; TODO: truth table
-(struct truth-table (count-input vector-input vector-value))
+(define (build-boolfunvector boolfun inputs-list)
+;;boolfun: the tree which contains definition of boolean function
+;;inputs-list: this will help in transforming inputs in boolfun into positions
+	(define numerized (numerize-boolfun boolfun inputs-list))
+	(define bvv (number->boolvecvec (count inputs-list)))
+	(for ([v bvv])
+		(evaluate-boolfun numerized ) ;TODO fix me
+	)
+)
+
 (define (number->vector-bool n)
 	(cond [(not (integer? n)) (error "not integer:" n)] )
 	(define vector-bool '()) ; TODO
@@ -148,7 +167,11 @@ plan:
     )
 )
 
-
+(provide (contract-out
+  [base-function?
+	 (symbol? . -> .
+			  boolean?) ]
+))
 (define (base-function? x)
 	(and
 	  (symbol? x)
@@ -189,6 +212,11 @@ plan:
 	)
 	(o2
 	  (and i1 i2 i3)
+	)
+	(o3
+	  (and i1
+		(or i1 i2 i3)
+		i3)
 	)
   }
 )
@@ -233,6 +261,21 @@ plan:
 	(remove-duplicates (flatten input))
 )
 
+
+(struct parsed-outfun (out-symbol boolfun ins truthtable))
+(define (make-parsed-out definition)
+;;definition is a list of length 2:
+; 1. symbol? : designator of out
+; 2. list? : tree, which is definition of boolean function
+  (define out-symbol (list-ref definition 0))
+  (define boolfun (list-ref definition 1))
+  (define list-ins (build-list-ins boolfun))
+  (parsed-outfun
+	out-symbol ;out-symbol
+	boolfun ;boolfun
+	list-ins ;list-ins
+	(build-boolfunvector boolfun list-ins) ;truthtable
+))
 (define (build-list-outs input)
   ;TODO
   (format #t "TODO: code for (build-list-outs ...)")
