@@ -18,6 +18,9 @@ plan:
 	  )
 	)
 )
+(define (make-hash-2lists keys vals)
+  (make-hash (map cons keys vals)) )
+
 
 ; mayhaps assoc? or hashmap!
 ; TODO: remove global state
@@ -32,17 +35,118 @@ plan:
 ;	(assert (symbol? out-symbol) "")
 ;	(assert (valid-boolfun? boolfun) "")
 ;)
+(define boolvec-vector (vector
+	(vector          #f) ;0 ;  0
+	(vector          #t) ;1 ;  1
+	(vector       #t #f)    ;  2
+	(vector       #t #t) ;2 ;  3
+	(vector    #t #f #f)    ;  4
+	(vector    #t #f #t)    ;  5
+	(vector    #t #t #f)    ;  6
+	(vector    #t #t #t) ;3 ;  7
+	(vector #t #f #f #f)    ;  8
+	(vector #t #f #f #t)    ;  9
+	(vector #t #f #t #f)    ; 10
+	(vector #t #f #t #t)    ; 11
+	(vector #t #t #f #f)    ; 12
+	(vector #t #t #f #t)    ; 13
+	(vector #t #t #t #f)    ; 14
+	(vector #t #t #t #t) ;4 ; 15
+))
+
+(define boolvecvec_1 (vector
+	(vector          #f) ;0 ;  0
+	(vector          #t) ;1 ;  1
+))
+
+(define boolvecvec_2 (vector
+	(vector          #f) ;0 ;  0
+	(vector          #t) ;1 ;  1
+	(vector       #t #f)    ;  2
+	(vector       #t #t) ;2 ;  3
+))
+
+(define boolvecvec_3 (vector
+	(vector          #f) ;0 ;  0
+	(vector          #t) ;1 ;  1
+	(vector       #t #f)    ;  2
+	(vector       #t #t) ;2 ;  3
+	(vector    #t #f #f)    ;  4
+	(vector    #t #f #t)    ;  5
+	(vector    #t #t #f)    ;  6
+	(vector    #t #t #t) ;3 ;  7
+))
+
+(define boolvecvec_4 (vector
+	(vector          #f) ;0 ;  0
+	(vector          #t) ;1 ;  1
+	(vector       #t #f)    ;  2
+	(vector       #t #t) ;2 ;  3
+	(vector    #t #f #f)    ;  4
+	(vector    #t #f #t)    ;  5
+	(vector    #t #t #f)    ;  6
+	(vector    #t #t #t) ;3 ;  7
+	(vector #t #f #f #f)    ;  8
+	(vector #t #f #f #t)    ;  9
+	(vector #t #f #t #f)    ; 10
+	(vector #t #f #t #t)    ; 11
+	(vector #t #t #f #f)    ; 12
+	(vector #t #t #f #t)    ; 13
+	(vector #t #t #t #f)    ; 14
+	(vector #t #t #t #t) ;4 ; 15
+))
 
 
 
-(define (numerize-boolfun boolfun inputs-list)
-	(error "TODO (numerize-boolfun boolfun inputs-list)")
+
+(define (make-numlist n)
+  (define (nlm n)
+     (cond
+       ((< n 0) '())
+       (else (cons n (nlm (- n 1))
+                   )
+       )
+     )
+  )
+  (reverse (nlm n))
 )
-(define (number->boolvecvec n)
-	(error "TODO (number->boolvecvec n)")
+
+
+(define (translate-in-tree  tree  hashmap)
+  (cond
+   ((list? tree)
+    (map (lambda (t) (translate-in-tree t hashmap)) tree)
+   )
+   ((and
+      (symbol? tree)
+      (hash-has-key? hashmap tree ) )
+    (hash-ref hashmap tree "ERROR")
+   )
+   (else tree)
+  )
 )
-(define (evaluate-numerized-boolfun nboolfun boolvec)
-	
+(translate-in-tree
+  '(i1
+     (i1 i2)
+     i1
+     (i1 (i2 i3)) )
+  (make-hash-2lists '(i1 i2 i3) '(1 2 3)) )
+
+
+
+
+(define (numerize-boolfun boolfun inputs-list) ;todo
+  (define l (length inputs-list))
+  (define inputs-map (hash inputs-list
+						   (make-numlist (length inputs-list)) ))
+	(translate-in-tree boolfun inputs-map)
+	(error "todo (numerize-boolfun boolfun inputs-list)")
+)
+(define (number->boolvecvec n) ;todo
+	(error "todo (number->boolvecvec n)")
+)
+(define (evaluate-numerized-boolfun nboolfun boolvec) ;todo
+	(error "todo (number->boolvecvec n)")
 )
 ; TODO: truth table
 (define (build-boolfunvector boolfun inputs-list)
