@@ -122,12 +122,6 @@ plan:
    (else tree)
   )
 )
-(translate-in-tree
-  '(i1
-     (i1 i2)
-     i1
-     (i1 (i2 i3)) )
-  (make-hash-2lists '(i1 i2 i3) '(1 2 3)) )
 
 
 
@@ -192,7 +186,7 @@ plan:
 
 
 
-(define list-axioms
+(define list-axioms ;todo: finish this list
 	'((= (and #f #f) #f)
 	  (= (or  #f #f) #f)
 	  (= (and #t #t) #t)
@@ -206,7 +200,7 @@ plan:
 
 
 (define (add-input symbol)
-	(cond 
+	(cond
 	  [
 	   (not (member symbol *list-input*))
 	   (set! *list-input* (append *list-input* (list symbol) ) )
@@ -217,7 +211,7 @@ plan:
 
 (define (add-output output-list)
 	;TODO
-	*set-output* 
+	*set-output*
 )
 
 
@@ -400,22 +394,14 @@ plan:
 
 
 
-(add-out
-  'a1
-  'b1
-)
 
-(add-out
-    'o1
-    '(or (and
-            i1
-            !i2
-        )
-        i3
-        i4
-    )
-)
 
+(translate-in-tree
+  '(i1
+     (i1 i2)
+     i1
+     (i1 (i2 i3)) )
+  (make-hash-2lists '(i1 i2 i3) '(1 2 3)) )
 
 
 ;; tests
