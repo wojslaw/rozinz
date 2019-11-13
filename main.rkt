@@ -157,6 +157,7 @@ plan:
 	)
 )
 
+
 (define (number->vector-bool n)
 	(cond [(not (integer? n)) (error "not integer:" n)] )
 	(define vector-bool '()) ; TODO
@@ -175,14 +176,6 @@ plan:
 )
 
 
-(define (new-truth-table f)
-	(error "unfinished")
-	(define list-input (function->list-variables f))
-	(define vector-values '())
-
-
-	(truth-table (count list-input) (list->vector list-input) vector-values)
-)
 
 
 {define list-base-functions
