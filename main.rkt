@@ -31,6 +31,7 @@ plan:
 
 
 
+;todo: function that spits out a boolvector for given number, instead of this monstrosity
 (define boolvec-vector (vector
 	(vector          #f) ;0 ;  0
 	(vector          #t) ;1 ;  1
@@ -141,7 +142,7 @@ plan:
 (define (number->boolvecvec n) ;todo
 	(error "todo (number->boolvecvec n)")
 )
-(define (evaluate-numerized-boolfun nboolfun boolvec) ;todo
+(define (evaluate-numerized-boolfun boolfun boolvec) ;todo
 	(error "todo (number->boolvecvec n)")
 )
 ; TODO: truth table
@@ -150,8 +151,9 @@ plan:
 ;;inputs-list: this will help in transforming inputs in boolfun into positions
 	(define numerized (numerize-boolfun boolfun inputs-list))
 	(define bvv (number->boolvecvec (count inputs-list)))
-	(for ([v bvv])
-		(evaluate-boolfun numerized ) ;TODO fix me
+	(vector-map
+	  (lambda (boolvec) (evaluate-numerized-boolfun numerized boolvec))
+	  bvv
 	)
 )
 
