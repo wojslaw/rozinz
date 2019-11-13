@@ -31,10 +31,6 @@ plan:
 
 
 
-;(define (make-parsed-outfun out-symbol boolfun)
-;	(assert (symbol? out-symbol) "")
-;	(assert (valid-boolfun? boolfun) "")
-;)
 (define boolvec-vector (vector
 	(vector          #f) ;0 ;  0
 	(vector          #t) ;1 ;  1
