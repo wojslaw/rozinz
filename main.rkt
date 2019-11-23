@@ -109,6 +109,11 @@ plan:
 )
 
 
+
+;;;; the following translation procedures could have been
+;abstracted better: by having 1 (translate-in-tree ) procedure
+;that translates depending on what you supply as a dictionary,
+;be it vector or hashmap
 (define (translate-in-tree  tree  hashmap)
   (cond
    ((list? tree)
@@ -124,6 +129,26 @@ plan:
 )
 
 
+(define (translate-in-indexed-tree-using-vector  tree  transvec)
+;  (printf "(translate ~A  ~A)~%" tree transvec)
+  (cond
+   ((list? tree)
+;    (display (printf got list: ~A~%" tree))
+    (map (lambda (t) (translate-in-indexed-tree-using-vector t transvec))
+         tree)
+   )
+    ((and
+       (number? tree)
+       (> (vector-length transvec) tree) ) ; todo: signal error if requested too high index
+;     (display (printf found index ~A in vector ~A ~%" tree transvec ))
+     (vector-ref transvec tree)
+    )
+   (else tree) ;(translate-if-index tree transvec))
+  )
+)
+
+
+
 
 
 (define (numerize-boolfun boolfun inputs-list) ;todo
@@ -131,14 +156,45 @@ plan:
   (define inputs-map (hash inputs-list
 						   (make-numlist (length inputs-list)) ))
 	(translate-in-tree boolfun inputs-map)
-	(error "todo (numerize-boolfun boolfun inputs-list)")
+;	(error "todo (numerize-boolfun boolfun inputs-list)")
 )
 (define (number->boolvecvec n) ;todo
 	(error "todo (number->boolvecvec n)")
 )
-(define (evaluate-numerized-boolfun boolfun boolvec) ;todo
-	(error "todo (number->boolvecvec n)")
+
+(define (evaluate-base-boolean-function fun arglist)
+	'()
+;	(case
+;		
+;		(else (error "unexpected "))
+;	)
 )
+
+(define (evaluate-booltree bt)
+;assumes that the tree has proper form
+; that is: only lists beginning with a proper base function symbol, and everything else is a boolean
+; todo: error checking
+	(cond
+	  ((and (list? bt) (symbol? (car bt)))
+	   (evaluate-base-boolean-function (car bt) (cdr bt)) )
+	  (else bt)
+	)
+)
+
+(define (evaluate-numerized-boolfun boolfun boolvec) ;todo
+  (define booltree (translate-in-indexed-tree-using-vector boolfun boolvec))
+  (printf "made booltre~%from: ~A~%     ~A~% to: ~A~%" boolfun boolvec booltree)
+  (evaluate-booltree booltree)
+  ;(eval 
+)
+(printf "the following should be #t: ")
+;(and #t #t)
+;(eval (list 'and #t #t))
+(evaluate-numerized-boolfun
+  '(and 0 1 (or 1 2))
+  (list->vector (list #t #t #f)) )
+
+
 ; TODO: truth table
 (define (build-boolfunvector boolfun inputs-list)
 ;;boolfun: the tree which contains definition of boolean function
@@ -152,9 +208,10 @@ plan:
 )
 
 
-(define (number->vector-bool n)
+(define (number->vector-bool n)  ; TODO
+  (error "todo number->vector-bool")
 	(cond [(not (integer? n)) (error "not integer:" n)] )
-	(define vector-bool '()) ; TODO
+	(define vector-bool '())
 
 	vector-bool
 )
@@ -295,7 +352,7 @@ plan:
 (define (gather-input input-info)
   ;; TODO: gather from a file or something, instead of being preprogrammed
   ;; gather from a file? for now, let's just spit out a bunch of ASTs
-  '{
+  '(
 	(o1
 	  (or  i1 i2 i3)
 	)
@@ -307,7 +364,7 @@ plan:
 		(or i1 i2 i3)
 		i3)
 	)
-  }
+  )
 )
 
 
@@ -340,13 +397,14 @@ plan:
 
 
 (define (validate-input in)
-	(format #t "TODO: actually validate input in (validate-input)")
+	(printf "TODO: actually validate input in (validate-input)~%")
 	;TODO: validate stuff
 	in
 )
 
 
 (define (build-list-ins input)
+; TODO: remove non-input tokens
 	(remove-duplicates (flatten input))
 )
 
@@ -367,26 +425,30 @@ plan:
 ))
 (define (build-list-outs input)
   ;TODO
-  (format #t "TODO: code for (build-list-outs ...)")
+  (printf "TODO: code for (build-list-outs ...)~%")
   input
 )
 
 
 
-(define (optimize-outs input)
+(define (optimize-outs outs-list)
   ;TODO
-  (format #t "TODO: code for (optimize-outs ...)")
+  (printf "TODO: code for (optimize-outs ...)")
 )
 
 
 
 
-(define (main1)
-	(define input-list (gather-input)) ;TODO: gather input
+(module+ main
+	(define input-list (gather-input '())) ;TODO: gather input
 	(define valid-input (validate-input input-list))
 	(define list-ins  (build-list-ins  valid-input))
 	(define list-outs (build-list-outs valid-input))
-	(define finished-product (optimize-outs list-outs list-ins))
+	(define finished-product (optimize-outs list-outs))
+
+	(printf "~%  valid-input:~%") (display valid-input)
+	(printf "~%  list-ins:~%") (display list-ins)
+	(printf "~%  list-outs:~%") (display list-outs)
 	finished-product
 )
 
@@ -394,16 +456,17 @@ plan:
 
 
 
-
-
-(translate-in-tree
-  '(i1
-     (i1 i2)
-     i1
-     (i1 (i2 i3)) )
-  (make-hash-2lists '(i1 i2 i3) '(1 2 3)) )
-
-
 ;; tests
+;
+(module+ test-translate-in-tree
+	(translate-in-tree
+	  '(i1
+		 (i1 i2)
+		 i1
+		 (i1 (i2 i3)) )
+	  (make-hash-2lists '(i1 i2 i3) '(1 2 3)) )
+)
+
+
 
 ;(test-add-out-collision)
