@@ -11,6 +11,9 @@ plan:
 3. find repeating terms
 |#
 
+
+; TODO: stringify symbols on input, and fix the avalanche that will ensue
+
 (define (assert condition message)
 	(cond
 	  ( (not condition)
@@ -121,7 +124,7 @@ plan:
    )
    ((and
       (symbol? tree)
-      (hash-has-key? hashmap tree ) )
+      (hash-has-key? hashmap tree) )
     (hash-ref hashmap tree "ERROR")
    )
    (else tree)
@@ -344,7 +347,7 @@ plan:
 (provide (contract-out
 		   [gather-input (list? . -> . list?)]
 		   [validate-input (list? . -> . list?)]
-		   [valid-input-symbol? (symbol? . -> . boolean?)]
+		  ; [valid-input-symbol? (symbol? . -> . boolean?)]
 ))
 
 
@@ -386,12 +389,28 @@ plan:
 	  (numbering-correct?) )
 )
 
+
+
 (define (valid-input-symbol? s)
-	(cond
-		((member s list-base-functions)
-		  s)
-		
-		(else #f)
+  (define s '())
+  (and (valid-boolvar-symbol? s)
+	   (eq? (string-ref (symbol->string s) 0)
+			#\i ) )
+)
+
+
+(define (stringify-recursively t)
+  (cond
+	((symbol? t)
+	 (symbol->string t)
+	)
+	((string? t)
+	 t
+	)
+	((list? t)
+	 (map stringify-recursively t)
+	)
+	(else (error "unexpected input while stringify-recursively" t))
 	)
 )
 
@@ -399,14 +418,16 @@ plan:
 (define (validate-input in)
 	(printf "TODO: actually validate input in (validate-input)~%")
 	;TODO: validate stuff
-	in
+	(stringify-recursively in)
 )
 
 
 (define (build-list-ins input)
 ; TODO: remove non-input tokens
-	(remove-duplicates (flatten input))
-)
+	(filter
+	  (lambda (x) #f) ; valid-input-symbol?
+	  (remove-duplicates (flatten input))) )
+
 
 
 (struct parsed-outfun (out-symbol boolfun ins truthtable))
@@ -441,7 +462,7 @@ plan:
 
 (module+ main
 	(define input-list (gather-input '())) ;TODO: gather input
-	(define valid-input (validate-input input-list))
+	(define valid-input input-list) ;(validate-input input-list))
 	(define list-ins  (build-list-ins  valid-input))
 	(define list-outs (build-list-outs valid-input))
 	(define finished-product (optimize-outs list-outs))
