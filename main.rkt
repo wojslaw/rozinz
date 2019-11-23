@@ -123,7 +123,7 @@ plan:
     (map (lambda (t) (translate-in-tree t hashmap)) tree)
    )
    ((and
-      (symbol? tree)
+      (string? tree)
       (hash-has-key? hashmap tree) )
     (hash-ref hashmap tree "ERROR")
    )
@@ -178,7 +178,7 @@ plan:
 ; that is: only lists beginning with a proper base function symbol, and everything else is a boolean
 ; todo: error checking
 	(cond
-	  ((and (list? bt) (symbol? (car bt)))
+	  ((and (list? bt) (string? (car bt)))
 	   (evaluate-base-boolean-function (car bt) (cdr bt)) )
 	  (else bt)
 	)
@@ -311,19 +311,19 @@ plan:
     (error "unfinished")
     (cond
       [
-		(eq? f1 f2)
+		(equal? f1 f2)
 	  ]
     )
 )
 
 (provide (contract-out
   [base-function?
-	 (symbol? . -> .
+	 (string? . -> .
 			  boolean?) ]
 ))
 (define (base-function? x)
 	(and
-	  (symbol? x)
+	  (string? x)
 	  (member x list-base-functions)
 	)
 )
@@ -331,7 +331,7 @@ plan:
 
 (define (variable? x)
 	(and
-		(symbol? x)
+		(string? x)
 		(not (base-function? x))
 	)
 )
@@ -371,15 +371,14 @@ plan:
 )
 
 
-(define (valid-boolvar-symbol? s)
-	(define s (symbol->string s))
+(define (valid-boolvar-string? s)
 	(define s-1st (string-ref s 0))
 	(define s-tail (substring s 1))
 	(define first-correct?
 	  (or
-	    (eq? s-1st #\i)
-	    (eq? s-1st #\o)
-	    (eq? s-1st #\f) )
+	    (equal? s-1st #\i)
+	    (equal? s-1st #\o)
+	    (equal? s-1st #\f) )
 	)
 	(define numbering-correct?
 		(string->number s-tail)
@@ -391,10 +390,10 @@ plan:
 
 
 
-(define (valid-input-symbol? s)
+(define (valid-input-string? s)
   (define s '())
-  (and (valid-boolvar-symbol? s)
-	   (eq? (string-ref (symbol->string s) 0)
+  (and (valid-boolvar-string? s)
+	   (equal? (string-ref (symbol->string s) 0)
 			#\i ) )
 )
 
@@ -462,15 +461,21 @@ plan:
 
 (module+ main
 	(define input-list (gather-input '())) ;TODO: gather input
-	(define valid-input input-list) ;(validate-input input-list))
+
+	(define valid-input (validate-input input-list)) ;now we are working with strings
+
 	(define list-ins  (build-list-ins  valid-input))
 	(define list-outs (build-list-outs valid-input))
 	(define finished-product (optimize-outs list-outs))
 
-	(printf "~%  valid-input:~%") (display valid-input)
-	(printf "~%  list-ins:~%") (display list-ins)
-	(printf "~%  list-outs:~%") (display list-outs)
-	finished-product
+	(printf "~%  valid-input:~A~%"
+			valid-input)
+	(printf "~%  list-ins:~A~%"
+			list-ins )
+	(printf "~%  list-outs:~A~% "
+			list-outs )
+	(printf "~%finished product: ~A~%"
+			finished-product )
 )
 
 
