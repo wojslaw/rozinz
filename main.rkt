@@ -390,12 +390,6 @@ plan:
 
 
 
-(define (valid-input-string? s)
-  (define s '())
-  (and (valid-boolvar-string? s)
-	   (equal? (string-ref (symbol->string s) 0)
-			#\i ) )
-)
 
 
 (define (stringify-recursively t)
@@ -421,10 +415,25 @@ plan:
 )
 
 
+
+
+(define (valid-input-string? s)
+  (and
+	(string? s)
+	(equal?
+	  (string-ref s 0)
+	  #\i )
+	(string->number (substring s 1))
+  )
+)
+
+
 (define (build-list-ins input)
 ; TODO: remove non-input tokens
+;	(printf "~%(build-list-ins ~A)~%" input)
+;	(printf "~%flattened, deduped ~A~%" (remove-duplicates (flatten input)))
 	(filter
-	  (lambda (x) #f) ; valid-input-symbol?
+	  valid-input-string? ; valid-input-symbol?
 	  (remove-duplicates (flatten input))) )
 
 
