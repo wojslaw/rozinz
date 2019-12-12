@@ -112,6 +112,125 @@ plan:
 )
 
 
+(define (number->binary n)
+	(cond (not (integer? n)) (error "not integer when trying to make binary representation" n))
+	(format "~b" n)
+)
+
+(define (digit->bool n)
+    (cond
+      ((equal? n 0) #f)
+      ((equal? n #\0) #f)
+      ((equal? n "0") #f)
+      ((equal? n 1) #t)
+      ((equal? n #\1) #t)
+      ((equal? n "1") #t)
+	  (else (error "unexpected" n))
+    )
+)
+
+(define (number->boolvec n)
+	;(newline)
+	(define binary-string (number->binary n))
+	;(display binary-string)
+	;(newline)
+	(define list-characters (string->list binary-string))
+	;(display list-characters)
+	;(newline)
+	(define list-booleans (map digit->bool list-characters))
+	;(display list-booleans)
+	;(newline)
+	(list->vector list-booleans)
+)
+
+;(printf "~%    6 = ~A~%" (number->boolvec 6))
+;(printf "   13 = ~A~%" (number->boolvec 13))
+;(printf "   15 = ~A~%" (number->boolvec 15))
+
+
+(define (make-number-sequence n) ; (0 1 2 3 4 ... n)
+  (define (recurse-ascend-number seq n)
+    (cond
+      ((equal? seq null)
+       (recurse-ascend-number
+         (cons n null)
+         (- n 1)
+       )
+      )
+      ((> (car seq) 0)
+        (cons (recurse-ascend-number seq (- n 1)))
+        seq
+      )
+      (else
+          seq
+      )
+    )
+  )
+  (recurse-ascend-number null n)
+)
+
+
+
+(define (number->boolvecvec n)
+; FIXME
+; currently it has 2 glaring issues that require fixing:
+; FIXED 1. goes 1 value lower than expected
+;	e.g. when supplying 4, it only goes up to #(#t #t), instead of up to #(#t #f #f)
+; 2. it doesn't create vectors which have sufficient 
+;	e.g. when supplying 4, the first vector is #(#f) instead of #(#f #f #f)
+	(define numbersequence  (list->vector (range (+ 1 n))))
+	(vector-map number->boolvec numbersequence)
+)
+
+
+(define (generate-boolvecvec veclen)
+;;;; generate a vector of vectors of boolean, up to `n` values
+;;;; e.g. n=3 will generate #(#(#f #f #f) #(#f #f #t) ... #(#t #t #t))
+	(cond
+	  ((equal? veclen 0)
+		(error "must be integer greater than 0"))
+	)
+	
+	(define number-list (range (expt 2  veclen ))) ; `(integer? (expt 2 64))` returns `#t`, so should be okay
+	(define string-list (map (lambda (n) (format "~b" n)) number-list))
+	(define list-charlists
+	  (map
+		string->list
+		string-list ) )
+	(define list-booleanlists
+		(map
+		  (lambda (cl)
+			(map digit->bool cl)
+		  )
+		  list-charlists) )
+
+
+	(define (prepend-#f-to-list desired-length bool-list)
+		(cond
+		  ( (= desired-length (length bool-list))
+			bool-list
+		  )
+		  (else
+			(prepend-#f-to-list desired-length (cons #f bool-list))
+		  )
+		)
+	)
+	
+	(define list-filled-booleanlists
+	  (map
+	    (lambda (bl) (prepend-#f-to-list veclen  bl))
+		list-booleanlists ) )
+
+
+	list-filled-booleanlists
+)
+
+(printf "~ngenerate boolvecvec:~n")
+(print (generate-boolvecvec 4))
+
+
+;(printf "~%making boolvecvec from 4: ~A~%" (number->boolvecvec 4))
+
 
 ;;;; the following translation procedures could have been
 ;abstracted better: by having 1 (translate-in-tree ) procedure
@@ -160,9 +279,6 @@ plan:
 						   (make-numlist (length inputs-list)) ))
 	(translate-in-tree boolfun inputs-map)
 ;	(error "todo (numerize-boolfun boolfun inputs-list)")
-)
-(define (number->boolvecvec n) ;todo
-	(error "todo (number->boolvecvec n)")
 )
 
 (define (evaluate-base-boolean-function fun arglist)
