@@ -25,79 +25,6 @@ plan:
   (make-hash (map cons keys vals)) )
 
 
-; mayhaps assoc? or hashmap!
-; TODO: remove global state
-(define *out-map* (make-hash))
-(define *list-input* (list))
-(define *set-output* (make-hash))
-(define *list-flag* (list)) ; flags shall be defined by the program in some cases, when minimizing functions
-
-
-
-;todo: function that spits out a boolvector for given number, instead of this monstrosity
-(define boolvec-vector (vector
-	(vector          #f) ;0 ;  0
-	(vector          #t) ;1 ;  1
-	(vector       #t #f)    ;  2
-	(vector       #t #t) ;2 ;  3
-	(vector    #t #f #f)    ;  4
-	(vector    #t #f #t)    ;  5
-	(vector    #t #t #f)    ;  6
-	(vector    #t #t #t) ;3 ;  7
-	(vector #t #f #f #f)    ;  8
-	(vector #t #f #f #t)    ;  9
-	(vector #t #f #t #f)    ; 10
-	(vector #t #f #t #t)    ; 11
-	(vector #t #t #f #f)    ; 12
-	(vector #t #t #f #t)    ; 13
-	(vector #t #t #t #f)    ; 14
-	(vector #t #t #t #t) ;4 ; 15
-))
-
-(define boolvecvec_1 (vector
-	(vector          #f) ;0 ;  0
-	(vector          #t) ;1 ;  1
-))
-
-(define boolvecvec_2 (vector
-	(vector          #f) ;0 ;  0
-	(vector          #t) ;1 ;  1
-	(vector       #t #f)    ;  2
-	(vector       #t #t) ;2 ;  3
-))
-
-(define boolvecvec_3 (vector
-	(vector          #f) ;0 ;  0
-	(vector          #t) ;1 ;  1
-	(vector       #t #f)    ;  2
-	(vector       #t #t) ;2 ;  3
-	(vector    #t #f #f)    ;  4
-	(vector    #t #f #t)    ;  5
-	(vector    #t #t #f)    ;  6
-	(vector    #t #t #t) ;3 ;  7
-))
-
-(define boolvecvec_4 (vector
-	(vector          #f) ;0 ;  0
-	(vector          #t) ;1 ;  1
-	(vector       #t #f)    ;  2
-	(vector       #t #t) ;2 ;  3
-	(vector    #t #f #f)    ;  4
-	(vector    #t #f #t)    ;  5
-	(vector    #t #t #f)    ;  6
-	(vector    #t #t #t) ;3 ;  7
-	(vector #t #f #f #f)    ;  8
-	(vector #t #f #f #t)    ;  9
-	(vector #t #f #t #f)    ; 10
-	(vector #t #f #t #t)    ; 11
-	(vector #t #t #f #f)    ; 12
-	(vector #t #t #f #t)    ; 13
-	(vector #t #t #t #f)    ; 14
-	(vector #t #t #t #t) ;4 ; 15
-))
-
-
-
 
 (define (make-numlist n)
   (define (nlm n)
@@ -225,11 +152,16 @@ plan:
 	list-filled-booleanlists
 )
 
-(printf "~ngenerate boolvecvec:~n")
-(print (generate-boolvecvec 4))
+;(printf "~ngenerate boolvecvec 1:~n")
+;(print (generate-boolvecvec 1))
+;(printf "~ngenerate boolvecvec 2:~n")
+;(print (generate-boolvecvec 2))
+;(printf "~ngenerate boolvecvec 3:~n")
+;(print (generate-boolvecvec 3))
+;(printf "~ngenerate boolvecvec 4:~n")
+;(print (generate-boolvecvec 4))
 
 
-;(printf "~%making boolvecvec from 4: ~A~%" (number->boolvecvec 4))
 
 
 ;;;; the following translation procedures could have been
@@ -302,9 +234,9 @@ plan:
 
 (define (evaluate-numerized-boolfun boolfun boolvec) ;todo
   (define booltree (translate-in-indexed-tree-using-vector boolfun boolvec))
-  (printf "made booltre~%from: ~A~%     ~A~% to: ~A~%" boolfun boolvec booltree)
+  (printf "(evaluate-numerized-boolfun ~%  ~A~%  ~A~%) = ~A~%" boolfun boolvec booltree)
   (evaluate-booltree booltree)
-  ;(eval 
+  ;(eval
 )
 (printf "the following should be #t: ")
 ;(and #t #t)
@@ -315,11 +247,11 @@ plan:
 
 
 ; TODO: truth table
-(define (build-boolfunvector boolfun inputs-list)
-;;boolfun: the tree which contains definition of boolean function
-;;inputs-list: this will help in transforming inputs in boolfun into positions
+(define (build-truthtable boolfun inputs-list)
+;; boolfun: the tree which contains definition of boolean function
+;; inputs-list: this will help in transforming inputs in boolfun into positions
 	(define numerized (numerize-boolfun boolfun inputs-list))
-	(define bvv (number->boolvecvec (count inputs-list)))
+	(define bvv (number->boolvecvec (length inputs-list)))
 	(vector-map
 	  (lambda (boolvec) (evaluate-numerized-boolfun numerized boolvec))
 	  bvv
@@ -375,51 +307,6 @@ plan:
 )
 
 
-(define (add-input symbol)
-	(cond
-	  [
-	   (not (member symbol *list-input*))
-	   (set! *list-input* (append *list-input* (list symbol) ) )
-	  ]
-	)
-)
-
-
-(define (add-output output-list)
-	;TODO
-	*set-output*
-)
-
-
-(define (add-out out fun)
-  ; 1. check if will collide
-    (cond
-	  [
-	    (not (variable? out))
-		(error "out has to be a variable. instead is:" out)
-	  ]
-	  [
-	    (hash-ref *out-map* out #f)
-		(error "add-out collision with symbol: " out)
-	  ]
-    )
-  ; 2. transform symbols into strings(or maybe don't?)
-
-  ; ... . add to out-map
-  (hash-set! *out-map* out fun)
-)
-(define (test-add-out-collision)
-	(add-out 'colision-test '1)
-	(add-out 'colision-test '1)
-)
-
-
-(define (define-outs outs)
-	(define outs-list (list))
-	; TODO
-
-	outs-list
-)
 
 
 
@@ -554,24 +441,31 @@ plan:
 
 
 
-(struct parsed-outfun (out-symbol boolfun ins truthtable))
-(define (make-parsed-out definition)
+(struct outfun
+  ( out-symbol
+    boolfun
+    list-inputs
+    truthtable ) )
+(define (make-outfun definition)
 ;;definition is a list of length 2:
 ; 1. symbol? : designator of out
 ; 2. list? : tree, which is definition of boolean function
   (define out-symbol (list-ref definition 0))
   (define boolfun (list-ref definition 1))
   (define list-ins (build-list-ins boolfun))
-  (parsed-outfun
+  (outfun
 	out-symbol ;out-symbol
 	boolfun ;boolfun
 	list-ins ;list-ins
-	(build-boolfunvector boolfun list-ins) ;truthtable
+	(build-truthtable boolfun list-ins) ;truthtable
 ))
 (define (build-list-outs input)
+;;;; this shall build a list of outputs, which have the structure defined by
+; `(struct outfun ... )`
+;
   ;TODO
   (printf "TODO: code for (build-list-outs ...)~%")
-  input
+  (map make-outfun input)
 )
 
 
@@ -586,21 +480,29 @@ plan:
 
 (module+ main
 	(define input-list (gather-input '())) ;TODO: gather input
-
 	(define valid-input (validate-input input-list)) ;now we are working with strings
+	(printf "~%  valid-input: ~%")
+	(display valid-input)
+	(newline)
 
 	(define list-ins  (build-list-ins  valid-input))
+	(printf "~%  list-ins:~%")
+	(display list-ins)
+	(newline)
+
 	(define list-outs (build-list-outs valid-input))
+	(printf "~%  list-outs:~%")
+	(for
+	  ((out list-outs))
+	  (write out)
+	  (newline) )
+	(newline)
+
 	(define finished-product (optimize-outs list-outs))
 
-	(printf "~%  valid-input:~A~%"
-			valid-input)
-	(printf "~%  list-ins:~A~%"
-			list-ins )
-	(printf "~%  list-outs:~A~% "
-			list-outs )
-	(printf "~%finished product: ~A~%"
-			finished-product )
+	(printf "~%finished product:~%")
+	(display finished-product)
+	(newline)
 )
 
 
