@@ -5,6 +5,15 @@
 
 
 #|
+what I ended with:
+1. managed to make work the part, which evaluates the boolfuns.
+generating vectors of vectors of booleans works :3
+numerizing boolfuns  works :3
+evaluating the boolfun  works :3
+|#
+
+
+#|
 plan:
 1. validate input
 2. build list of inputs and outputs(with their function)
@@ -98,16 +107,16 @@ plan:
 
 
 
-(define (number->boolvecvec n)
-; FIXME
-; currently it has 2 glaring issues that require fixing:
-; FIXED 1. goes 1 value lower than expected
-;	e.g. when supplying 4, it only goes up to #(#t #t), instead of up to #(#t #f #f)
-; 2. it doesn't create vectors which have sufficient 
-;	e.g. when supplying 4, the first vector is #(#f) instead of #(#f #f #f)
-	(define numbersequence  (list->vector (range (+ 1 n))))
-	(vector-map number->boolvec numbersequence)
-)
+;(define (number->boolvecvec n)
+;; FIXME
+;; currently it has 2 glaring issues that require fixing:
+;; FIXED 1. goes 1 value lower than expected
+;;	e.g. when supplying 4, it only goes up to #(#t #t), instead of up to #(#t #f #f)
+;; 2. it doesn't create vectors which have sufficient 
+;;	e.g. when supplying 4, the first vector is #(#f) instead of #(#f #f #f)
+;	(define numbersequence  (list->vector (range (+ 1 n))))
+;	(vector-map number->boolvec numbersequence)
+;)
 
 
 (define (generate-boolvecvec veclen)
@@ -149,7 +158,7 @@ plan:
 		list-booleanlists ) )
 
 
-	list-filled-booleanlists
+	(list->vector (map list->vector list-filled-booleanlists))
 )
 
 ;(printf "~ngenerate boolvecvec 1:~n")
@@ -169,17 +178,22 @@ plan:
 ;that translates depending on what you supply as a dictionary,
 ;be it vector or hashmap
 (define (translate-in-tree  tree  hashmap)
-  (cond
-   ((list? tree)
-    (map (lambda (t) (translate-in-tree t hashmap)) tree)
-   )
-   ((and
-      (string? tree)
-      (hash-has-key? hashmap tree) )
-    (hash-ref hashmap tree "ERROR")
-   )
-   (else tree)
+  (printf "(translate-in-tree ~A ~A) = " tree hashmap)
+  (define result
+      (cond
+       ((list? tree)
+        (map (lambda (t) (translate-in-tree t hashmap)) tree)
+       )
+       ((and
+          (or (string? tree) (symbol? tree))
+          (hash-has-key? hashmap tree) )
+        (hash-ref hashmap tree "ERROR")
+       )
+       (else tree)
+      )
   )
+  (printf "~A~%" result)
+  result
 )
 
 
@@ -202,56 +216,132 @@ plan:
 )
 
 
+{define list-base-functions
+	'(
+		!
+		not; TODO: should `not`|`!` be a special operator with special treatment? probably not, but maybe it would be better
+		and
+		or
+		nor
+		nand
+		xor
+	)
+}
+
+(define (valid-basic-bool-function? s)
+  ((list? (member s list-base-functions))) )
+
+(define (valid-numerized-value? v)
+  (or (valid-basic-bool-function? v)
+	  (integer? v) ) )
+
+(define (boolfun-numerized? bt)
+;not numerized = (or (and i1 i2) i3)
+;yes numerized = (or (and  1  2)  3)
+	(cond
+	  ((list? bt)
+	   (andmap
+		 boolfun-numerized?
+		 bt) )
+	  (else (valid-numerized-value? bt)) ) )
+
+
+(define (make-hash-from-2-lists keys vals)
+  (make-hash
+	(map cons keys vals) ) )
+
+
+
+(define (make-inputs-map-from-list  list-inputs)
+  (define number-range (range (length list-inputs) ))
+  (make-hash-from-2-lists
+	list-inputs
+	number-range ) )
 
 
 
 (define (numerize-boolfun boolfun inputs-list) ;todo
+  (printf "(numerize-boolfun~%  ~A~%  ~A )~%" boolfun inputs-list)
+;  (cond ((not (boolfun-numerized? boolfun))
+;		 (error "not numerized function! (numerize-boolfun  >>~A<<  ~A)~%" boolfun inputs-list)
+;   ))
   (define l (length inputs-list))
-  (define inputs-map (hash inputs-list
-						   (make-numlist (length inputs-list)) ))
-	(translate-in-tree boolfun inputs-map)
+  (define inputs-map (make-inputs-map-from-list inputs-list))
+  (define numerized (translate-in-tree boolfun inputs-map))
+  (printf "numerized = ~A~%" numerized)
+  numerized
 ;	(error "todo (numerize-boolfun boolfun inputs-list)")
 )
 
-(define (evaluate-base-boolean-function fun arglist)
-	'()
-;	(case
-;		
-;		(else (error "unexpected "))
-;	)
-)
+
+; https://stackoverflow.com/questions/20778926/mysterious-racket-error-define-unbound-identifier-also-no-app-syntax-trans#20783438
+(define my-eval
+  (let ((ns (make-base-namespace)))
+    (parameterize ((current-namespace ns))
+      (namespace-require 'racket/bool))
+    (lambda (expr) (eval expr ns))))
+
 
 (define (evaluate-booltree bt)
 ;assumes that the tree has proper form
 ; that is: only lists beginning with a proper base function symbol, and everything else is a boolean
 ; todo: error checking
-	(cond
-	  ((and (list? bt) (string? (car bt)))
-	   (evaluate-base-boolean-function (car bt) (cdr bt)) )
-	  (else bt)
-	)
+; problem I have here:
+; this function receives input of the form 
+;   '(and #t #t (or #t #f))
+; now, how do I force the program to evaluate it?
+; 1. idea: save it to a file, then spawn a new racket shell that will evaluate
+;	(printf "(evaluate-booltree ~A)~%" bt)
+;	(display bt)
+;	(newline)
+;	(print bt)
+;	(newline)
+	(my-eval bt)
+;	(cond
+;	  ((and (list? bt) (string? (car bt)))
+;	   (evaluate-base-boolean-function (car bt) (cdr bt)) )
+;	  (else bt)
+;	)
 )
+
 
 (define (evaluate-numerized-boolfun boolfun boolvec) ;todo
   (define booltree (translate-in-indexed-tree-using-vector boolfun boolvec))
-  (printf "(evaluate-numerized-boolfun ~%  ~A~%  ~A~%) = ~A~%" boolfun boolvec booltree)
-  (evaluate-booltree booltree)
+  ;(printf "(evaluate-numerized-boolfun ~%  ~A~%  ~A~%)~%" boolfun boolvec)
+  (define evaluated-value (evaluate-booltree booltree))
+  ;(printf "result = ~A~%" evaluated-value)
+  evaluated-value
   ;(eval
 )
-(printf "the following should be #t: ")
+;(printf "the following should be #t: ")
 ;(and #t #t)
 ;(eval (list 'and #t #t))
-(evaluate-numerized-boolfun
-  '(and 0 1 (or 1 2))
-  (list->vector (list #t #t #f)) )
+(define test-bt '(and 0 1 (or 1 2)) )
+(define test-vector (vector #t #t #t))
+;(evaluate-numerized-boolfun
+;  test-bt
+;  test-vector )
+
+(define (evaluate-numerized-boolfun-with-boolvecvec boolfun boolvecvec)
+	(vector-map
+	  (lambda (boolvec)
+		(evaluate-numerized-boolfun boolfun boolvec) )
+	  boolvecvec ) )
+
+;(printf "~% (generate-boolvecvec 3) = ~A~%" (generate-boolvecvec 3))
+;(printf "~% evaling ~A with boolvecvec ~A~%" test-bt (generate-boolvecvec 3))
+;(printf "~%~A~%" (evaluate-numerized-boolfun-with-boolvecvec test-bt (generate-boolvecvec 3)))
 
 
-; TODO: truth table
+; TODO: truthtable
 (define (build-truthtable boolfun inputs-list)
 ;; boolfun: the tree which contains definition of boolean function
 ;; inputs-list: this will help in transforming inputs in boolfun into positions
+	(printf "~%(build-truthtable~%  ~A~%  ~A)~%" boolfun inputs-list)
 	(define numerized (numerize-boolfun boolfun inputs-list))
-	(define bvv (number->boolvecvec (length inputs-list)))
+	(printf "numerized = ~A~%" numerized)
+	(define bvv (generate-boolvecvec (length inputs-list)))
+	(printf "bvv = ~A~%" bvv)
 	(vector-map
 	  (lambda (boolvec) (evaluate-numerized-boolfun numerized boolvec))
 	  bvv
@@ -259,13 +349,15 @@ plan:
 )
 
 
-(define (number->vector-bool n)  ; TODO
-  (error "todo number->vector-bool")
-	(cond [(not (integer? n)) (error "not integer:" n)] )
-	(define vector-bool '())
 
-	vector-bool
-)
+
+;(define (number->vector-bool n)  ; TODO
+;  (error "todo number->vector-bool")
+;	(cond [(not (integer? n)) (error "not integer:" n)] )
+;	(define vector-bool '())
+;
+;	vector-bool
+;)
 
 
 (define (function->list-variables f)
@@ -280,17 +372,6 @@ plan:
 
 
 
-{define list-base-functions
-	'(
-		!
-		not; TODO: should `not`|`!` be a special operator with special treatment? probably not, but maybe it would be better
-		and
-		or
-		nor
-		nand
-		xor
-	)
-}
 
 
 
@@ -414,7 +495,8 @@ plan:
 (define (validate-input in)
 	(printf "TODO: actually validate input in (validate-input)~%")
 	;TODO: validate stuff
-	(stringify-recursively in)
+	;(stringify-recursively in)
+	in
 )
 
 
@@ -430,13 +512,16 @@ plan:
   )
 )
 
+(define (valid-input-symbol? s)
+  (valid-input-string? (symbol->string s)) )
 
 (define (build-list-ins input)
 ; TODO: remove non-input tokens
 ;	(printf "~%(build-list-ins ~A)~%" input)
 ;	(printf "~%flattened, deduped ~A~%" (remove-duplicates (flatten input)))
 	(filter
-	  valid-input-string? ; valid-input-symbol?
+	  ; valid-input-string?
+	  valid-input-symbol?
 	  (remove-duplicates (flatten input))) )
 
 
@@ -445,7 +530,10 @@ plan:
   ( out-symbol
     boolfun
     list-inputs
-    truthtable ) )
+    vector-vectors-bools
+    truthtable )
+  #:transparent
+ )
 (define (make-outfun definition)
 ;;definition is a list of length 2:
 ; 1. symbol? : designator of out
@@ -453,19 +541,30 @@ plan:
   (define out-symbol (list-ref definition 0))
   (define boolfun (list-ref definition 1))
   (define list-ins (build-list-ins boolfun))
+  (printf "list-ins = ~A~%" list-ins)
+  (printf "(make-outfun ~A): (length list-ins) = ~A~%" definition (length list-ins))
+  (define boolvecvec (generate-boolvecvec (length list-ins)))
+  (define truthtable (build-truthtable boolfun list-ins))
   (outfun
 	out-symbol ;out-symbol
 	boolfun ;boolfun
 	list-ins ;list-ins
-	(build-truthtable boolfun list-ins) ;truthtable
+	boolvecvec
+	truthtable  ;truthtable
 ))
-(define (build-list-outs input)
+
+;(define (format-outfun outfun)
+;  
+;)
+
+
+(define (build-list-outs list-input)
 ;;;; this shall build a list of outputs, which have the structure defined by
 ; `(struct outfun ... )`
 ;
   ;TODO
   (printf "TODO: code for (build-list-outs ...)~%")
-  (map make-outfun input)
+  (map make-outfun list-input)
 )
 
 
@@ -490,19 +589,30 @@ plan:
 	(display list-ins)
 	(newline)
 
-	(define list-outs (build-list-outs valid-input))
-	(printf "~%  list-outs:~%")
-	(for
-	  ((out list-outs))
-	  (write out)
-	  (newline) )
+	(define outfun-def (list-ref valid-input 0))
+	(display outfun-def)
+	(newline)
+	(define outfun (make-outfun outfun-def))
+	(display outfun)
+	;(display (format-outfun outfun))
 	(newline)
 
-	(define finished-product (optimize-outs list-outs))
 
-	(printf "~%finished product:~%")
-	(display finished-product)
-	(newline)
+;	(define list-outs (build-list-outs valid-input))
+;	(printf "~%  list-outs:~%")
+;	(display list-outs)
+;	(newline)
+;	(for
+;	  ((out list-outs))
+;	  (write out)
+;	  (newline) )
+;	(newline)
+
+;	(define finished-product (optimize-outs list-outs))
+;
+;	(printf "~%finished product:~%")
+;	(display finished-product)
+;	(newline)
 )
 
 
