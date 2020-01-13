@@ -348,7 +348,14 @@ plan:
 	)
 )
 
+(define (truthtable-display inputs outputs header-list) ;
+	(error "unfinished (truthtable-display)")
+ )
 
+(define (truthtable-get-ins tt)
+  (car tt))
+(define (truthtable-get-outs tt)
+  (cdr tt))
 
 
 ;(define (number->vector-bool n)  ; TODO
@@ -552,6 +559,23 @@ plan:
 	boolvecvec
 	truthtable  ;truthtable
 ))
+(define (outfun-display-truthtable of)
+;; TODO format it properly:
+; i1 i2 i3 o1
+; ...
+; #t #t #f #t
+; #t #t #t #t
+; ...
+	(define tt-ins (outfun-vector-vectors-bools of))
+	(define tt-outs (outfun-truthtable of))
+	(define tt-header
+	  (append
+		(outfun-list-inputs of)
+		(list (outfun-out-symbol of)) ) )
+	(printf "(outfun-display-truthtable):~%~A~%~A~%~A~%~%" tt-ins tt-outs tt-header)
+	(error "not done (outfun-display-truthtable ...)")
+)
+
 
 ;(define (format-outfun outfun)
 ;  
@@ -600,7 +624,7 @@ plan:
 ;	(display outfun)
 	;(display (format-outfun outfun))
 	(newline)
-
+	(outfun-display-truthtable (car list-outs))
 
 ;	(define list-outs (build-list-outs valid-input))
 ;	(printf "~%  list-outs:~%")
