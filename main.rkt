@@ -559,7 +559,7 @@ plan:
 	boolvecvec
 	truthtable  ;truthtable
 ))
-(define (outfun-display-truthtable outfun)
+(define (outfun-print-truthtable outfun)
 ;; TODO format it properly:
 ; i1 i2 i3 o1
 ; ...
@@ -572,7 +572,7 @@ plan:
 	  (append
 		(outfun-list-inputs outfun)
 		(list (outfun-out-symbol outfun)) ) )
-	(printf "(outfun-display-truthtable):~%~A~%~A~%~A~%~%" tt-ins tt-outs tt-header)
+	(printf "(outfun-print-truthtable):~%~A~%~A~%~A~%~%" tt-ins tt-outs tt-header)
 	(printf " ~A~%" tt-header)
 	(for ((i tt-ins)
 		  (o tt-outs) )
@@ -628,7 +628,7 @@ plan:
 ;	(display outfun)
 	;(display (format-outfun outfun))
 	(newline)
-	(outfun-display-truthtable (car list-outs))
+	(outfun-print-truthtable (car list-outs))
 
 ;	(define list-outs (build-list-outs valid-input))
 ;	(printf "~%  list-outs:~%")
