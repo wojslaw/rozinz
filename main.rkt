@@ -559,21 +559,25 @@ plan:
 	boolvecvec
 	truthtable  ;truthtable
 ))
-(define (outfun-display-truthtable of)
+(define (outfun-display-truthtable outfun)
 ;; TODO format it properly:
 ; i1 i2 i3 o1
 ; ...
 ; #t #t #f #t
 ; #t #t #t #t
 ; ...
-	(define tt-ins (outfun-vector-vectors-bools of))
-	(define tt-outs (outfun-truthtable of))
+	(define tt-ins (outfun-vector-vectors-bools outfun))
+	(define tt-outs (outfun-truthtable outfun))
 	(define tt-header
 	  (append
-		(outfun-list-inputs of)
-		(list (outfun-out-symbol of)) ) )
+		(outfun-list-inputs outfun)
+		(list (outfun-out-symbol outfun)) ) )
 	(printf "(outfun-display-truthtable):~%~A~%~A~%~A~%~%" tt-ins tt-outs tt-header)
-	(error "not done (outfun-display-truthtable ...)")
+	(printf " ~A~%" tt-header)
+	(for ((i tt-ins)
+		  (o tt-outs) )
+	  (printf "~A  ~A~%" i o)
+	 )
 )
 
 
