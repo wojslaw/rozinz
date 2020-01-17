@@ -161,15 +161,6 @@ plan:
 	(list->vector (map list->vector list-filled-booleanlists))
 )
 
-;(printf "~ngenerate boolvecvec 1:~n")
-;(print (generate-boolvecvec 1))
-;(printf "~ngenerate boolvecvec 2:~n")
-;(print (generate-boolvecvec 2))
-;(printf "~ngenerate boolvecvec 3:~n")
-;(print (generate-boolvecvec 3))
-;(printf "~ngenerate boolvecvec 4:~n")
-;(print (generate-boolvecvec 4))
-
 
 
 
@@ -235,6 +226,7 @@ plan:
   (or (valid-basic-bool-function? v)
 	  (integer? v) ) )
 
+
 (define (boolfun-numerized? bt)
 ;not numerized = (or (and i1 i2) i3)
 ;yes numerized = (or (and  1  2)  3)
@@ -260,7 +252,7 @@ plan:
 
 
 
-(define (numerize-boolfun boolfun inputs-list) ;todo
+(define (numerize-boolfun boolfun inputs-list) ;TODO - write tests
   (printf "(numerize-boolfun~%  ~A~%  ~A )~%" boolfun inputs-list)
 ;  (cond ((not (boolfun-numerized? boolfun))
 ;		 (error "not numerized function! (numerize-boolfun  >>~A<<  ~A)~%" boolfun inputs-list)
@@ -285,42 +277,22 @@ plan:
 (define (evaluate-booltree bt)
 ;assumes that the tree has proper form
 ; that is: only lists beginning with a proper base function symbol, and everything else is a boolean
-; todo: error checking
+; TODO error checking
 ; problem I have here:
 ; this function receives input of the form 
 ;   '(and #t #t (or #t #f))
-; now, how do I force the program to evaluate it?
-; 1. idea: save it to a file, then spawn a new racket shell that will evaluate
-;	(printf "(evaluate-booltree ~A)~%" bt)
-;	(display bt)
-;	(newline)
-;	(print bt)
-;	(newline)
+; now, how do I force the program to evaluate it? I just took (my-eval) from some stack-overflow thing
 	(my-eval bt)
-;	(cond
-;	  ((and (list? bt) (string? (car bt)))
-;	   (evaluate-base-boolean-function (car bt) (cdr bt)) )
-;	  (else bt)
-;	)
 )
 
 
-(define (evaluate-numerized-boolfun boolfun boolvec) ;todo
+(define (evaluate-numerized-boolfun boolfun boolvec) ;TODO - write tests
   (define booltree (translate-in-indexed-tree-using-vector boolfun boolvec))
-  ;(printf "(evaluate-numerized-boolfun ~%  ~A~%  ~A~%)~%" boolfun boolvec)
   (define evaluated-value (evaluate-booltree booltree))
-  ;(printf "result = ~A~%" evaluated-value)
   evaluated-value
-  ;(eval
 )
-;(printf "the following should be #t: ")
-;(and #t #t)
-;(eval (list 'and #t #t))
-(define test-bt '(and 0 1 (or 1 2)) )
-(define test-vector (vector #t #t #t))
-;(evaluate-numerized-boolfun
-;  test-bt
-;  test-vector )
+
+
 
 (define (evaluate-numerized-boolfun-with-boolvecvec boolfun boolvecvec)
 	(vector-map
@@ -328,9 +300,6 @@ plan:
 		(evaluate-numerized-boolfun boolfun boolvec) )
 	  boolvecvec ) )
 
-;(printf "~% (generate-boolvecvec 3) = ~A~%" (generate-boolvecvec 3))
-;(printf "~% evaling ~A with boolvecvec ~A~%" test-bt (generate-boolvecvec 3))
-;(printf "~%~A~%" (evaluate-numerized-boolfun-with-boolvecvec test-bt (generate-boolvecvec 3)))
 
 
 ; DONE: truthtable
@@ -348,14 +317,6 @@ plan:
 	)
 )
 
-(define (truthtable-display inputs outputs header-list) ;
-	(error "unfinished (truthtable-display)")
- )
-
-(define (truthtable-get-ins tt)
-  (car tt))
-(define (truthtable-get-outs tt)
-  (cdr tt))
 
 
 
@@ -556,7 +517,10 @@ plan:
 	boolvecvec
 	truthtable  ;truthtable
 ))
+
+
 (define (outfun-print-truthtable outfun)
+;; TODO decouple, that is make a separate function instead of keeping it all as (outfun-print-truthable ... )
 ;; TODO format it properly:
 ; i1 i2 i3 o1
 ; ...
@@ -586,16 +550,13 @@ plan:
 (define (build-list-outs list-input)
 ;;;; this shall build a list of outputs, which have the structure defined by
 ; `(struct outfun ... )`
-;
-  ;TODO
-  (printf "TODO: code for (build-list-outs ...)~%")
   (map make-outfun list-input)
 )
 
 
 
 (define (optimize-outs outs-list)
-  ;TODO - this is the most important where magic should happen xD
+  ;TODO - this is the most important function where magic should happen xD
   (printf "TODO: code for (optimize-outs ...)")
 )
 
@@ -603,7 +564,7 @@ plan:
 
 
 (module+ main
-	(define input-list (gather-input '())) ;TODO: gather input
+	(define input-list (gather-input '())) ;TODO actually gather input from something, not have it prebaked.
 	(define valid-input (validate-input input-list)) ; (validate-input) should ideally actually validate the input
 	(printf "~%  valid-input: ~%")
 	(display valid-input)
@@ -661,4 +622,3 @@ plan:
 
 
 
-;(test-add-out-collision)
