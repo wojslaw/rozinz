@@ -20,8 +20,23 @@ plan:
 3. find repeating terms
 |#
 
+#|
+TODO
+'global numerization'
+1. create a 'global' list/vector of inputs
+2. numerize functions with numbers according to this global list/vector
+this should make the logic during optimization easier, because instead of looking for symbols, i can just compare numbers!
 
-; TODO: stringify symbols on input, and fix the avalanche that will ensue
+
+
+IDEA
+'hold numerized boolfun'
+for the sake of easier work, maybe outfun could hold a numerized boolean function tree?
+
+|#
+
+
+
 
 (define (assert condition message)
 	(cond
