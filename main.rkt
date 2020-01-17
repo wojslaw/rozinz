@@ -333,7 +333,7 @@ plan:
 ;(printf "~%~A~%" (evaluate-numerized-boolfun-with-boolvecvec test-bt (generate-boolvecvec 3)))
 
 
-; TODO: truthtable
+; DONE: truthtable
 (define (build-truthtable boolfun inputs-list)
 ;; boolfun: the tree which contains definition of boolean function
 ;; inputs-list: this will help in transforming inputs in boolfun into positions
@@ -358,13 +358,6 @@ plan:
   (cdr tt))
 
 
-;(define (number->vector-bool n)  ; TODO
-;  (error "todo number->vector-bool")
-;	(cond [(not (integer? n)) (error "not integer:" n)] )
-;	(define vector-bool '())
-;
-;	vector-bool
-;)
 
 
 (define (function->list-variables f)
@@ -444,6 +437,7 @@ plan:
 
 
 (define (gather-input input-info)
+  (printf "Uwaga! input jest predefiniowany w funkcji (gather-input ...)")
   ;; TODO: gather from a file or something, instead of being preprogrammed
   ;; gather from a file? for now, let's just spit out a bunch of ASTs
   '(
@@ -501,8 +495,15 @@ plan:
 
 (define (validate-input in)
 	(printf "TODO: actually validate input in (validate-input)~%")
-	;TODO: validate stuff
-	;(stringify-recursively in)
+	;TODO: validate input
+	; valid input will have the following properties:
+	; 1. only lists and symbols allowed
+	; 2. each list in the input must be a valid definition, that means:
+	;	1. list has length = 2
+	;	2. 1th value in definition shall be a symbol
+	;	3. 2th value in definition shall be a valid boolean function, that means:
+	;		1. boolean function is a tree: list of lists, each of those lists containing either symbols or lists
+	;		2. 1th value in each list in boolean function is a valid basic-function symbol, that is `and` `or` `not` etc.
 	in
 )
 
@@ -523,11 +524,7 @@ plan:
   (valid-input-string? (symbol->string s)) )
 
 (define (build-list-ins input)
-; TODO: remove non-input tokens
-;	(printf "~%(build-list-ins ~A)~%" input)
-;	(printf "~%flattened, deduped ~A~%" (remove-duplicates (flatten input)))
 	(filter
-	  ; valid-input-string?
 	  valid-input-symbol?
 	  (remove-duplicates (flatten input))) )
 
@@ -598,7 +595,7 @@ plan:
 
 
 (define (optimize-outs outs-list)
-  ;TODO
+  ;TODO - this is the most important where magic should happen xD
   (printf "TODO: code for (optimize-outs ...)")
 )
 
@@ -607,7 +604,7 @@ plan:
 
 (module+ main
 	(define input-list (gather-input '())) ;TODO: gather input
-	(define valid-input (validate-input input-list)) ;now we are working with strings
+	(define valid-input (validate-input input-list)) ; (validate-input) should ideally actually validate the input
 	(printf "~%  valid-input: ~%")
 	(display valid-input)
 	(newline)
