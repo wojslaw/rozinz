@@ -22,6 +22,10 @@ plan:
 
 #|
 TODO
+1. decouple taking boolfun-tree/outsymbol from definition
+
+
+TODO
 'global numerization'
 1. create a 'global' list/vector of inputs
 2. numerize functions with numbers according to this global list/vector
