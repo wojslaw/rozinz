@@ -235,7 +235,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 }
 
 (define (valid-basic-bool-function? s)
-  ((list? (member s list-base-functions))) )
+  (list? (member s list-base-functions)) )
 
 (define (valid-numerized-value? v)
   (or (valid-basic-bool-function? v)
@@ -317,7 +317,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 
 
 
-; DONE: truthtable
+; DONE truthtable
 (define (build-truthtable boolfun inputs-list)
 ;; boolfun: the tree which contains definition of boolean function
 ;; inputs-list: this will help in transforming inputs in boolfun into positions
@@ -351,7 +351,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 
 
 
-(define list-axioms ;todo: finish this list
+(define list-axioms ;TODO finish this list
 	'((= (and #f #f) #f)
 	  (= (or  #f #f) #f)
 	  (= (and #t #t) #t)
@@ -513,9 +513,16 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
  )
 
 (define (build-list-ins input)
+ ;; TODO make it, so this function
+ ; 1. recursively traverses the boolfun tree
+ ; 2. takes all symbols that aren't on the 0th position in list
+ ; errors out upon:
+ ; - encountering `(basic-function?)` on non-0th position
+ ; - encountering `(not (basic-function? ...))` on 0th position
   (sort-list-of-symbols-alphabetically
 	(filter
-	  valid-input-symbol?
+	  (lambda (s) (not (valid-basic-bool-function? s)))
+	  ;valid-input-symbol? ; 
 	  (remove-duplicates (flatten input))) ) )
 
 
@@ -593,15 +600,19 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 
 
 (module+ main
-	(define input-list (gather-input '())) ;TODO actually gather input from something, not have it prebaked.
+	(define input-list (gather-input '())) ; TODO actually gather input from something, not have it prebaked.
 	(define valid-input (validate-input input-list)) ; (validate-input) should ideally actually validate the input
 	(printf "~%  valid-input: ~%")
 	(display valid-input)
 	(newline)
 
-	(define list-ins  (build-list-ins  valid-input))
-	(printf "~%  list-ins:~%")
-	(display list-ins)
+	(define (take-only-boolfuns deflist) ; TODO
+	  (map
+		(λ (def) (list-ref def 1))
+		deflist)
+	  )
+	(define list-ins  (build-list-ins  valid-input)) ;; TODO (easy) take only boolfuns when building list of insymbols
+	(printf "~%  list-ins: ~A~%" list-ins)
 	(newline)
 
 	(define list-outs (build-list-outs valid-input))
