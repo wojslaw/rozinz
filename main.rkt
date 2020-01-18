@@ -418,7 +418,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
   ;; gather from a file? for now, let's just spit out a bunch of ASTs
   '(
 	(o1
-	  (or  i1 i2 i3)
+	  (or  i4 i2 i8)
 	)
 	(o2
 	  (and i1 i2 i3)
@@ -487,6 +487,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 
 
 (define (valid-input-string? s)
+;; TODO make it less strict, that is allow any symbol that isn't a symbol of boolfun
   (and
 	(string? s)
 	(equal?
@@ -499,10 +500,23 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 (define (valid-input-symbol? s)
   (valid-input-string? (symbol->string s)) )
 
+(define
+  (sort-list-of-symbols-alphabetically
+	list-of-symbols)
+  (define (symbol-less? s0 s1)
+	(string<?
+	  (symbol->string s0)
+	  (symbol->string s1) ) )
+  (sort
+	list-of-symbols
+	symbol-less? )
+ )
+
 (define (build-list-ins input)
+  (sort-list-of-symbols-alphabetically
 	(filter
 	  valid-input-symbol?
-	  (remove-duplicates (flatten input))) )
+	  (remove-duplicates (flatten input))) ) )
 
 
 
