@@ -188,7 +188,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 ;that translates depending on what you supply as a dictionary,
 ;be it vector or hashmap
 (define (translate-in-tree  tree  hashmap)
-  (printf "(translate-in-tree ~A ~A) = " tree hashmap)
+  ;(printf "(translate-in-tree ~A ~A) = " tree hashmap)
   (define result
       (cond
        ((list? tree)
@@ -202,7 +202,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
        (else tree)
       )
   )
-  (printf "~A~%" result)
+  ;(printf "~A~%" result)
   result
 )
 
@@ -272,14 +272,14 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 
 
 (define (numerize-boolfun boolfun inputs-list) ;TODO - write tests
-  (printf "(numerize-boolfun~%  ~A~%  ~A )~%" boolfun inputs-list)
+;  (printf "(numerize-boolfun~%  ~A~%  ~A )~%" boolfun inputs-list)
 ;  (cond ((not (boolfun-numerized? boolfun))
 ;		 (error "not numerized function! (numerize-boolfun  >>~A<<  ~A)~%" boolfun inputs-list)
 ;   ))
   (define l (length inputs-list))
   (define inputs-map (make-inputs-map-from-list inputs-list))
   (define numerized (translate-in-tree boolfun inputs-map))
-  (printf "numerized = ~A~%" numerized)
+;  (printf "numerized = ~A~%" numerized)
   numerized
 ;	(error "todo (numerize-boolfun boolfun inputs-list)")
 )
@@ -325,11 +325,11 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 (define (build-truthtable boolfun inputs-list)
 ;; boolfun: the tree which contains definition of boolean function
 ;; inputs-list: this will help in transforming inputs in boolfun into positions
-	(printf "~%(build-truthtable~%  ~A~%  ~A)~%" boolfun inputs-list)
+	;(printf "~%(build-truthtable~%  ~A~%  ~A)~%" boolfun inputs-list)
 	(define numerized (numerize-boolfun boolfun inputs-list))
-	(printf "numerized = ~A~%" numerized)
+	;(printf "numerized = ~A~%" numerized)
 	(define bvv (generate-boolvecvec (length inputs-list)))
-	(printf "bvv = ~A~%" bvv)
+	;(printf "bvv = ~A~%" bvv)
 	(vector-map
 	  (lambda (boolvec) (evaluate-numerized-boolfun numerized boolvec))
 	  bvv
@@ -422,10 +422,21 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
   ;; gather from a file? for now, let's just spit out a bunch of ASTs
   '(
 	(o1
-	  (or  i4 i2 i8)
+		(and
+			(or i1 i2)
+			(or i3 i4)
+		 )
 	)
 	(o2
-	  (and i1 i2 i3)
+	  (and
+		(or  i4 i2 i8)
+		(or  i1 i2 i3)
+		(or
+		  (and i1  i2  i3  i4)
+		  (and i5  i6  i7  i8)
+		  ;(and i9 i10 i11 i12)
+		  )
+	   )
 	)
 	(o3
 	  (and i1
@@ -546,8 +557,8 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
   (define out-symbol (list-ref definition 0))
   (define boolfun (list-ref definition 1))
   (define list-ins (build-list-ins boolfun))
-  (printf "list-ins = ~A~%" list-ins)
-  (printf "(make-outfun ~A): (length list-ins) = ~A~%" definition (length list-ins))
+;  (printf "list-ins = ~A~%" list-ins)
+;  (printf "(make-outfun ~A): (length list-ins) = ~A~%" definition (length list-ins))
   (define boolvecvec (generate-boolvecvec (length list-ins)))
   (define truthtable (build-truthtable boolfun list-ins))
   (outfun
@@ -560,12 +571,13 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 
 
 (define (outfun-print-truthtable outfun)
+;; TODO print out a tab-separated list of values, to read conveniently in a spreadsheet program
 ;; TODO decouple, that is make a separate function instead of keeping it all as (outfun-print-truthable ... )
-;; TODO format it properly:
+;; TODO format it properly instead of displaying the raw vectors:
 ; i1 i2 i3 o1
 ; ...
-; #t #t #f #t
-; #t #t #t #t
+; #t #f #f #t
+; #t #f #t #t
 ; ...
 	(define tt-ins (outfun-vector-vectors-bools outfun))
 	(define tt-outs (outfun-truthtable outfun))
@@ -620,9 +632,12 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 	(newline)
 
 	(define list-outs (build-list-outs valid-input))
-	(for ((o list-outs))
-	  (display o)
-	  (newline) )
+	(define (display-outs)
+		(for ((o list-outs))
+			(display o)
+			(newline)
+		 )
+	 )
 ;	(define outfun-def (list-ref valid-input 0))
 ;	(display outfun-def)
 ;	(newline)
