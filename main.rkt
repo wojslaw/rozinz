@@ -12,12 +12,20 @@
 (cond (verbose?
 	(printf "~%[[verbose on]]~%"))
 )
+;;; IMPORTANT!!!!
+;;; TODO check whether the numerization from global list of ins is done correctly
 #|
 what I ended with:
 1. managed to make work the part, which evaluates the boolfuns.
 generating vectors of vectors of booleans works :3
 numerizing boolfuns  works :3
 evaluating the boolfun  works :3
+|#
+
+
+#|
+current defect:
+when main is creating functions, it does most of the job twice, in that it generates the list of outfuns twice. first it does it as it used to(from only the list-of-length-2 having outfunsymbol and outfundefinition, second it does it with the global list of inputs.
 |#
 
 
@@ -560,9 +568,13 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
     boolfun
     list-inputs
     vector-vectors-bools
-    truthtable )
+    truthtable
+    numerized-from-global
+  )
   #:transparent
  )
+
+
 (define (make-outfun-with-list-ins definition list-ins)
 ;; definition is a list of length 2:
 ; 1. symbol? : designator of out
@@ -570,17 +582,26 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 ;; list-ins is a list of any length, which has the symbols of inputs as values in list
   (define out-symbol (list-ref definition 0))
   (define boolfun (list-ref definition 1))
+  (define list-ins (build-list-ins boolfun))
 ;  (if-verbose  (printf "list-ins = ~A~%" list-ins))
 ;  (if-verbose  (printf "(make-outfun ~A): (length list-ins) = ~A~%" definition (length list-ins)))
   (define boolvecvec (generate-boolvecvec (length list-ins)))
   (define truthtable (build-truthtable boolfun list-ins))
+
+  (define numerized-from-list-ins
+	(if (null? list-ins)
+		null
+		(numerize-boolfun boolfun list-ins)
+   ))
   (outfun
 	out-symbol ;out-symbol
 	boolfun ;boolfun
 	list-ins ;list-ins
 	boolvecvec
 	truthtable  ;truthtable
+	numerized-from-list-ins
 ))
+
 
 (define (make-outfun definition)
 ;;definition is a list of length 2:
@@ -588,11 +609,8 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 ; 2. list? : tree, which is definition of boolean function
   (define out-symbol (list-ref definition 0))
   (define boolfun (list-ref definition 1))
-  (define list-ins (build-list-ins boolfun))
-  (make-outfun-with-list-ins definition list-ins)
+  (make-outfun-with-list-ins definition null)
  )
-
-
 
 
 (define (outfun-print-truthtable outfun)
@@ -633,8 +651,10 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 (define (build-list-outs-globalized list-definitions list-input)
 ;;;; this shall build a list of outputs, which have the structure defined by
 ; `(struct outfun ... )`
-'()
-;  (map make-outfun-globalized list-definitions list-input)
+  (map
+	(lambda (d) (make-outfun-with-list-ins d list-input))
+	list-definitions
+  )
 )
 
 
