@@ -636,7 +636,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 
 	(define (take-only-boolfuns deflist) ; TODO
 	  (map
-		(λ (def) (list-ref def 1))
+		(lambda (def) (list-ref def 1))
 		deflist)
 	  )
 	(define list-ins  (build-list-ins  (map cdr valid-input))) ;; TODO (easy) take only boolfuns when building list of insymbols
