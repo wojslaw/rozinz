@@ -3,7 +3,7 @@
 (require racket/contract)
 (require errortrace)
 
-(define verbose? #f)
+(define verbose? #t)
 (define (if-verbose stuff)
   ;TODO make it work as expected
   ;trzeba by tu jakieś makro zrobić
@@ -447,7 +447,8 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 	   )
 	)
 	(o3
-	  (and i1
+	  (and
+		i1
 		(or i1 i2 i3)
 		i3)
 	)
@@ -562,13 +563,13 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
     truthtable )
   #:transparent
  )
-(define (make-outfun definition)
-;;definition is a list of length 2:
+(define (make-outfun-with-list-ins definition list-ins)
+;; definition is a list of length 2:
 ; 1. symbol? : designator of out
 ; 2. list? : tree, which is definition of boolean function
+;; list-ins is a list of any length, which has the symbols of inputs as values in list
   (define out-symbol (list-ref definition 0))
   (define boolfun (list-ref definition 1))
-  (define list-ins (build-list-ins boolfun))
 ;  (if-verbose  (printf "list-ins = ~A~%" list-ins))
 ;  (if-verbose  (printf "(make-outfun ~A): (length list-ins) = ~A~%" definition (length list-ins)))
   (define boolvecvec (generate-boolvecvec (length list-ins)))
@@ -580,6 +581,18 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 	boolvecvec
 	truthtable  ;truthtable
 ))
+
+(define (make-outfun definition)
+;;definition is a list of length 2:
+; 1. symbol? : designator of out
+; 2. list? : tree, which is definition of boolean function
+  (define out-symbol (list-ref definition 0))
+  (define boolfun (list-ref definition 1))
+  (define list-ins (build-list-ins boolfun))
+  (make-outfun-with-list-ins definition list-ins)
+ )
+
+
 
 
 (define (outfun-print-truthtable outfun)
@@ -617,6 +630,12 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
   (map make-outfun list-input)
 )
 
+(define (build-list-outs-globalized list-definitions list-input)
+;;;; this shall build a list of outputs, which have the structure defined by
+; `(struct outfun ... )`
+'()
+;  (map make-outfun-globalized list-definitions list-input)
+)
 
 
 (define (optimize-outs outs-list)
@@ -650,12 +669,13 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 			(newline)
 		 )
 	 )
-;	(define outfun-def (list-ref valid-input 0))
-;	(display outfun-def)
-;	(newline)
-;	(define outfun (make-outfun outfun-def))
-;	(display outfun)
-	;(display (format-outfun outfun))
+
+;(define outfun-def (list-ref valid-input 0))
+;(display outfun-def)
+;(newline)
+;(define outfun (make-outfun outfun-def))
+;(display outfun)
+;(display (format-outfun outfun))
 	(newline)
 	(cond (verbose?
 		(for ((o list-outs))
@@ -679,6 +699,13 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 ;	(printf "~%finished product:~%")
 ;	(display finished-product)
 ;	(newline)
+
+
+
+	(define list-globalized-outs
+	  (build-list-outs-globalized
+		valid-input
+		list-ins) )
 )
 
 
