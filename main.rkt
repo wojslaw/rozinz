@@ -3,7 +3,15 @@
 (require racket/contract)
 (require errortrace)
 
-
+(define verbose? #f)
+(define (if-verbose stuff)
+  ;TODO make it work as expected
+  ;trzeba by tu jakieś makro zrobić
+  (cond ((eq? verbose? #t) stuff))
+)
+(cond (verbose?
+	(printf "~%[[verbose on]]~%"))
+)
 #|
 what I ended with:
 1. managed to make work the part, which evaluates the boolfuns.
@@ -188,7 +196,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 ;that translates depending on what you supply as a dictionary,
 ;be it vector or hashmap
 (define (translate-in-tree  tree  hashmap)
-  ;(printf "(translate-in-tree ~A ~A) = " tree hashmap)
+;  (if-verbose (printf "(translate-in-tree ~A ~A) = " tree hashmap))
   (define result
       (cond
        ((list? tree)
@@ -202,23 +210,23 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
        (else tree)
       )
   )
-  ;(printf "~A~%" result)
+;  (if-verbose (printf "~A~%" result))
   result
 )
 
 
 (define (translate-in-indexed-tree-using-vector  tree  transvec)
-;  (printf "(translate ~A  ~A)~%" tree transvec)
+;  (if-verbose (printf "(translate ~A  ~A)~%" tree transvec))
   (cond
    ((list? tree)
-;    (display (printf got list: ~A~%" tree))
+;    (if-verbose (display (printf "got list: ~A~%" tree)))
     (map (lambda (t) (translate-in-indexed-tree-using-vector t transvec))
          tree)
    )
     ((and
        (number? tree)
        (> (vector-length transvec) tree) ) ; todo: signal error if requested too high index
-;     (display (printf found index ~A in vector ~A ~%" tree transvec ))
+;     (if-verbose (printf "found index ~A in vector ~A ~%" tree transvec ))
      (vector-ref transvec tree)
     )
    (else tree) ;(translate-if-index tree transvec))
@@ -229,7 +237,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 {define list-base-functions
 	'(
 		!
-		not; TODO: should `not`|`!` be a special operator with special treatment? probably not, but maybe it would be better
+		not ; IDEA should `not`|`!` be a special operator with special treatment? probably not, but maybe it would be better
 		and
 		or
 		nor
@@ -272,14 +280,14 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 
 
 (define (numerize-boolfun boolfun inputs-list) ;TODO - write tests
-;  (printf "(numerize-boolfun~%  ~A~%  ~A )~%" boolfun inputs-list)
+;   (if-verbose (printf "(numerize-boolfun~%  ~A~%  ~A )~%" boolfun inputs-list))
 ;  (cond ((not (boolfun-numerized? boolfun))
 ;		 (error "not numerized function! (numerize-boolfun  >>~A<<  ~A)~%" boolfun inputs-list)
 ;   ))
   (define l (length inputs-list))
   (define inputs-map (make-inputs-map-from-list inputs-list))
   (define numerized (translate-in-tree boolfun inputs-map))
-;  (printf "numerized = ~A~%" numerized)
+;  (if-verbose (printf "numerized = ~A~%" numerized))
   numerized
 ;	(error "todo (numerize-boolfun boolfun inputs-list)")
 )
@@ -325,11 +333,11 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 (define (build-truthtable boolfun inputs-list)
 ;; boolfun: the tree which contains definition of boolean function
 ;; inputs-list: this will help in transforming inputs in boolfun into positions
-	;(printf "~%(build-truthtable~%  ~A~%  ~A)~%" boolfun inputs-list)
+;	(if-verbose (printf "~%(build-truthtable~%  ~A~%  ~A)~%" boolfun inputs-list))
 	(define numerized (numerize-boolfun boolfun inputs-list))
-	;(printf "numerized = ~A~%" numerized)
+;	(if-verbose (printf "numerized = ~A~%" numerized))
 	(define bvv (generate-boolvecvec (length inputs-list)))
-	;(printf "bvv = ~A~%" bvv)
+;	(if-verbose (printf "bvv = ~A~%" bvv))
 	(vector-map
 	  (lambda (boolvec) (evaluate-numerized-boolfun numerized boolvec))
 	  bvv
@@ -534,11 +542,15 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
  ; errors out upon:
  ; - encountering `(basic-function?)` on non-0th position
  ; - encountering `(not (basic-function? ...))` on 0th position
+(printf "(build-list-ins ~A)~%" input)
+(newline)
+(newline)
   (sort-list-of-symbols-alphabetically
 	(filter
 	  (lambda (s) (not (valid-basic-bool-function? s)))
 	  ;valid-input-symbol? ; 
 	  (remove-duplicates (flatten input))) ) )
+
 
 
 
@@ -557,8 +569,8 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
   (define out-symbol (list-ref definition 0))
   (define boolfun (list-ref definition 1))
   (define list-ins (build-list-ins boolfun))
-;  (printf "list-ins = ~A~%" list-ins)
-;  (printf "(make-outfun ~A): (length list-ins) = ~A~%" definition (length list-ins))
+;  (if-verbose  (printf "list-ins = ~A~%" list-ins))
+;  (if-verbose  (printf "(make-outfun ~A): (length list-ins) = ~A~%" definition (length list-ins)))
   (define boolvecvec (generate-boolvecvec (length list-ins)))
   (define truthtable (build-truthtable boolfun list-ins))
   (outfun
@@ -627,7 +639,7 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 		(λ (def) (list-ref def 1))
 		deflist)
 	  )
-	(define list-ins  (build-list-ins  valid-input)) ;; TODO (easy) take only boolfuns when building list of insymbols
+	(define list-ins  (build-list-ins  (map cdr valid-input))) ;; TODO (easy) take only boolfuns when building list of insymbols
 	(printf "~%  list-ins: ~A~%" list-ins)
 	(newline)
 
@@ -645,7 +657,12 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 ;	(display outfun)
 	;(display (format-outfun outfun))
 	(newline)
-	(outfun-print-truthtable (car list-outs))
+	(cond (verbose?
+		(for ((o list-outs))
+			(outfun-print-truthtable o)
+		)
+	))
+;(outfun-print-truthtable (car list-outs))
 
 ;	(define list-outs (build-list-outs valid-input))
 ;	(printf "~%  list-outs:~%")
