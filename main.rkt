@@ -12,48 +12,6 @@
 (cond (verbose?
 	(printf "~%[[verbose on]]~%"))
 )
-;;; IMPORTANT!!!!
-;;; TODO check whether the numerization from global list of ins is done correctly
-#|
-what I ended with:
-1. managed to make work the part, which evaluates the boolfuns.
-generating vectors of vectors of booleans works :3
-numerizing boolfuns  works :3
-evaluating the boolfun  works :3
-|#
-
-
-#|
-current defect:
-when main is creating functions, it does most of the job twice, in that it generates the list of outfuns twice. first it does it as it used to(from only the list-of-length-2 having outfunsymbol and outfundefinition, second it does it with the global list of inputs.
-|#
-
-
-#|
-plan:
-1. validate input
-2. build list of inputs and outputs(with their function)
-3. find repeating terms
-|#
-
-#|
-TODO
-1. decouple taking boolfun-tree/outsymbol from definition
-
-
-TODO
-'global numerization'
-1. create a 'global' list/vector of inputs
-2. numerize functions with numbers according to this global list/vector
-this should make the logic during optimization easier, because instead of looking for symbols, i can just compare numbers!
-
-
-
-IDEA
-'hold numerized boolfun'
-for the sake of easier work, maybe outfun could hold a numerized boolean function tree?
-
-|#
 
 
 
@@ -142,16 +100,6 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 
 
 
-;(define (number->boolvecvec n)
-;; FIXME
-;; currently it has 2 glaring issues that require fixing:
-;; FIXED 1. goes 1 value lower than expected
-;;	e.g. when supplying 4, it only goes up to #(#t #t), instead of up to #(#t #f #f)
-;; 2. it doesn't create vectors which have sufficient 
-;;	e.g. when supplying 4, the first vector is #(#f) instead of #(#f #f #f)
-;	(define numbersequence  (list->vector (range (+ 1 n))))
-;	(vector-map number->boolvec numbersequence)
-;)
 
 
 (define (generate-boolvecvec veclen)
@@ -313,10 +261,6 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 ;assumes that the tree has proper form
 ; that is: only lists beginning with a proper base function symbol, and everything else is a boolean
 ; TODO error checking
-; problem I have here:
-; this function receives input of the form 
-;   '(and #t #t (or #t #f))
-; now, how do I force the program to evaluate it? I just took (my-eval) from some stack-overflow thing
 	(my-eval bt)
 )
 
@@ -636,6 +580,10 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 	 )
 )
 
+(define (outfun-print-numerized-from-global o)
+	(printf "~A" (outfun-numerized-from-global o))
+ )
+
 
 ;(define (format-outfun outfun)
 ;  
@@ -656,6 +604,9 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 	list-definitions
   )
 )
+
+
+
 
 
 (define (optimize-outs outs-list)
@@ -682,66 +633,38 @@ for the sake of easier work, maybe outfun could hold a numerized boolean functio
 	(printf "~%  list-ins: ~A~%" list-ins)
 	(newline)
 
-	(define list-outs (build-list-outs valid-input))
+
+
+	(printf "~%building list of globalized outs~%")
+	(define list-globalized-outs
+	  (build-list-outs-globalized
+		valid-input
+		list-ins) )
 	(define (display-outs)
-		(for ((o list-outs))
+		(for ((o list-globalized-outs))
 			(display o)
 			(newline)
 		 )
 	 )
 
-;(define outfun-def (list-ref valid-input 0))
-;(display outfun-def)
-;(newline)
-;(define outfun (make-outfun outfun-def))
-;(display outfun)
-;(display (format-outfun outfun))
-	(newline)
+
+;	(printf "~%globalized outs truthtables:~%")
+;	(cond (verbose?
+;		(for ((o list-globalized-outs))
+;			(outfun-print-truthtable o)
+;		)
+;	))
+	(printf "~%  list-ins: ~A~%" list-ins)
+	(printf "~%globalized outs:~%")
 	(cond (verbose?
-		(for ((o list-outs))
-			(outfun-print-truthtable o)
+		(for ((o list-globalized-outs))
+			(outfun-print-numerized-from-global o)
 		)
 	))
-;(outfun-print-truthtable (car list-outs))
-
-;	(define list-outs (build-list-outs valid-input))
-;	(printf "~%  list-outs:~%")
-;	(display list-outs)
-;	(newline)
-;	(for
-;	  ((out list-outs))
-;	  (write out)
-;	  (newline) )
-;	(newline)
-
-;	(define finished-product (optimize-outs list-outs))
-;
-;	(printf "~%finished product:~%")
-;	(display finished-product)
-;	(newline)
-
-
-
-	(define list-globalized-outs
-	  (build-list-outs-globalized
-		valid-input
-		list-ins) )
 )
 
 
 
-
-
-;; tests
-;
-(module+ test-translate-in-tree
-	(translate-in-tree
-	  '(i1
-		 (i1 i2)
-		 i1
-		 (i1 (i2 i3)) )
-	  (make-hash-2lists '(i1 i2 i3) '(1 2 3)) )
-)
 
 
 
