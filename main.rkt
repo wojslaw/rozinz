@@ -717,11 +717,6 @@
 			(outfun-print-numerized-from-global o)
 		)
 	))
-	(printf "~%~A~%" (outfun-truthtable (first list-globalized-outs))) ; TODO check this, output seems suspicious
-	(printf "~%~A~%" (outfun-truthtable (first list-outs))) ; TODO check this, output seems suspicious
-;globalized outs:
-;(and (or 0 1) (or 2 3))(and (or 3 1 7) (or 0 1 2) (or (and 0 1 2 3) (and 4 5 6 7)))(and 0 (or 0 1 2) 2)
-;#(#f #f #f #f #f #t #t #t #f #t #t #t #f #t #t #t)
 )
 
 
