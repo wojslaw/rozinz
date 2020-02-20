@@ -674,17 +674,17 @@
 
 
 
-	(printf "~%building list of outs~%")
-	(define list-outs
-	  (build-list-outs
-		valid-input
-		) )
-	(define (display-outs)
-		(for ((o list-outs))
-			(display o)
-			(newline)
-		 )
-	 )
+;	(printf "~%building list of outs~%")
+;	(define list-outs
+;	  (build-list-outs
+;		valid-input
+;		) )
+;	(define (display-outs)
+;		(for ((o list-outs))
+;			(display o)
+;			(newline)
+;		 )
+;	 )
 	(printf "~%building list of globalized outs~%")
 	(define list-globalized-outs
 	  (build-list-outs-globalized
@@ -697,26 +697,34 @@
 		 )
 	 )
 
-
 ;	(printf "~%globalized outs truthtables:~%")
 ;	(cond (verbose?
 ;		(for ((o list-globalized-outs))
 ;			(outfun-print-truthtable o)
 ;		)
 ;	))
+;
 	(printf "~%  list-ins: ~A~%" list-ins)
-	(printf "~%outs:~%")
-	(cond (verbose?
-		(for ((o list-outs))
-			(outfun-print-numerized-from-global o)
-		)
-	))
+
+;	(printf "~%outs:~%")
+;	(cond (verbose?
+;		(for ((o list-outs))
+;			(outfun-print-numerized-from-global o)
+;		)
+;	))
 	(printf "~%globalized outs:~%")
 	(cond (verbose?
 		(for ((o list-globalized-outs))
 			(outfun-print-numerized-from-global o)
 		)
 	))
+	(printf
+	  "~A"
+	  (string-join
+		(map
+		  format-outfun
+		  list-globalized-outs )
+		"\n" ) )
 )
 
 
