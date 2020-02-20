@@ -190,6 +190,19 @@
 )
 
 
+
+(define (list->tsv l)
+	;generates a line of tab-separated-values 
+	(string-join (map (lambda (v) (format "~A" v)) l)
+		[	"\t"
+			#:after-last "\n" ] ) )
+
+
+
+
+
+
+
 {define list-base-functions
 	'(
 		!
@@ -513,13 +526,25 @@
     list-inputs
     vector-vectors-bools
     truthtable
+    numerized
     numerized-from-global
   )
   #:transparent
  )
 
+(define (format-outfun of)
+	(format "{outfun:~A \n  boolfun:~A \n  list-inputs:~A\n  vector-vectors-bools:~A \n  truthtable:~A \n  numerized:~A \n  numerized-from-global:~A \n}"
+			(outfun-out-symbol of)
+			(outfun-boolfun of)
+			(outfun-list-inputs of)
+			(outfun-vector-vectors-bools of)
+			(outfun-truthtable of)
+			(outfun-numerized of)
+			(outfun-numerized-from-global of) ) )
 
-(define (make-outfun-with-list-ins definition list-ins)
+
+
+(define (make-outfun-with-list-ins definition external-list-ins)
 ;; definition is a list of length 2:
 ; 1. symbol? : designator of out
 ; 2. list? : tree, which is definition of boolean function
@@ -530,12 +555,14 @@
 ;  (if-verbose  (printf "list-ins = ~A~%" list-ins))
 ;  (if-verbose  (printf "(make-outfun ~A): (length list-ins) = ~A~%" definition (length list-ins)))
   (define boolvecvec (generate-boolvecvec (length list-ins)))
+  (define numerized (numerize-boolfun boolfun list-ins))
   (define truthtable (build-truthtable boolfun list-ins))
+  (printf "~%(make-outfun-with-list-ins~%  ~A~%  ~A)~%~A~%" definition external-list-ins truthtable)
 
-  (define numerized-from-list-ins
+  (define numerized-from-external-list-ins
 	(if (null? list-ins)
 		null
-		(numerize-boolfun boolfun list-ins)
+		(numerize-boolfun boolfun external-list-ins)
    ))
   (outfun
 	out-symbol ;out-symbol
@@ -543,7 +570,8 @@
 	list-ins ;list-ins
 	boolvecvec
 	truthtable  ;truthtable
-	numerized-from-list-ins
+	numerized
+	numerized-from-external-list-ins
 ))
 
 
@@ -580,14 +608,25 @@
 	 )
 )
 
+
+(define (outfun-print-truthtable_tsv outfun)
+;TODO this
+	(define header (list->tsv (outfun-vector-vectors-bools outfun)))
+	;(lambda 
+	(error "TODO this")
+)
+
+
+
+
+
+
+
 (define (outfun-print-numerized-from-global o)
 	(printf "~A" (outfun-numerized-from-global o))
  )
 
 
-;(define (format-outfun outfun)
-;  
-;)
 
 
 (define (build-list-outs list-input)
@@ -635,12 +674,23 @@
 
 
 
+	(printf "~%building list of outs~%")
+	(define list-outs
+	  (build-list-outs
+		valid-input
+		) )
+	(define (display-outs)
+		(for ((o list-outs))
+			(display o)
+			(newline)
+		 )
+	 )
 	(printf "~%building list of globalized outs~%")
 	(define list-globalized-outs
 	  (build-list-outs-globalized
 		valid-input
 		list-ins) )
-	(define (display-outs)
+	(define (display-globalized-outs)
 		(for ((o list-globalized-outs))
 			(display o)
 			(newline)
@@ -655,12 +705,23 @@
 ;		)
 ;	))
 	(printf "~%  list-ins: ~A~%" list-ins)
+	(printf "~%outs:~%")
+	(cond (verbose?
+		(for ((o list-outs))
+			(outfun-print-numerized-from-global o)
+		)
+	))
 	(printf "~%globalized outs:~%")
 	(cond (verbose?
 		(for ((o list-globalized-outs))
 			(outfun-print-numerized-from-global o)
 		)
 	))
+	(printf "~%~A~%" (outfun-truthtable (first list-globalized-outs))) ; TODO check this, output seems suspicious
+	(printf "~%~A~%" (outfun-truthtable (first list-outs))) ; TODO check this, output seems suspicious
+;globalized outs:
+;(and (or 0 1) (or 2 3))(and (or 3 1 7) (or 0 1 2) (or (and 0 1 2 3) (and 4 5 6 7)))(and 0 (or 0 1 2) 2)
+;#(#f #f #f #f #f #t #t #t #f #t #t #t #f #t #t #t)
 )
 
 
