@@ -41,6 +41,11 @@
 )
 
 
+(provide (contract-out
+  [number->binary
+	 (integer? . -> .
+			  string?) ]
+))
 (define (number->binary n)
 	(cond (not (integer? n)) (error "not integer when trying to make binary representation" n))
 	(format "~b" n)
@@ -58,45 +63,21 @@
     )
 )
 
+
+(provide (contract-out
+  [number->boolvec
+	 (number? . -> .
+			  vector?) ]
+))
 (define (number->boolvec n)
-	;(newline)
 	(define binary-string (number->binary n))
-	;(display binary-string)
-	;(newline)
 	(define list-characters (string->list binary-string))
-	;(display list-characters)
-	;(newline)
 	(define list-booleans (map digit->bool list-characters))
-	;(display list-booleans)
-	;(newline)
 	(list->vector list-booleans)
 )
 
-;(printf "~%    6 = ~A~%" (number->boolvec 6))
-;(printf "   13 = ~A~%" (number->boolvec 13))
-;(printf "   15 = ~A~%" (number->boolvec 15))
 
 
-(define (make-number-sequence n) ; (0 1 2 3 4 ... n)
-  (define (recurse-ascend-number seq n)
-    (cond
-      ((equal? seq null)
-       (recurse-ascend-number
-         (cons n null)
-         (- n 1)
-       )
-      )
-      ((> (car seq) 0)
-        (cons (recurse-ascend-number seq (- n 1)))
-        seq
-      )
-      (else
-          seq
-      )
-    )
-  )
-  (recurse-ascend-number null n)
-)
 
 
 
@@ -172,20 +153,17 @@
 
 
 (define (translate-in-indexed-tree-using-vector  tree  transvec)
-;  (if-verbose (printf "(translate ~A  ~A)~%" tree transvec))
   (cond
    ((list? tree)
-;    (if-verbose (display (printf "got list: ~A~%" tree)))
     (map (lambda (t) (translate-in-indexed-tree-using-vector t transvec))
          tree)
    )
     ((and
        (number? tree)
        (> (vector-length transvec) tree) ) ; todo: signal error if requested too high index
-;     (if-verbose (printf "found index ~A in vector ~A ~%" tree transvec ))
      (vector-ref transvec tree)
     )
-   (else tree) ;(translate-if-index tree transvec))
+   (else tree)
   )
 )
 
@@ -249,16 +227,10 @@
 
 
 (define (numerize-boolfun boolfun inputs-list) ;TODO - write tests
-;   (if-verbose (printf "(numerize-boolfun~%  ~A~%  ~A )~%" boolfun inputs-list))
-;  (cond ((not (boolfun-numerized? boolfun))
-;		 (error "not numerized function! (numerize-boolfun  >>~A<<  ~A)~%" boolfun inputs-list)
-;   ))
   (define l (length inputs-list))
   (define inputs-map (make-inputs-map-from-list inputs-list))
   (define numerized (translate-in-tree boolfun inputs-map))
-;  (if-verbose (printf "numerized = ~A~%" numerized))
   numerized
-;	(error "todo (numerize-boolfun boolfun inputs-list)")
 )
 
 
@@ -298,11 +270,8 @@
 (define (build-truthtable boolfun inputs-list)
 ;; boolfun: the tree which contains definition of boolean function
 ;; inputs-list: this will help in transforming inputs in boolfun into positions
-;	(if-verbose (printf "~%(build-truthtable~%  ~A~%  ~A)~%" boolfun inputs-list))
 	(define numerized (numerize-boolfun boolfun inputs-list))
-;	(if-verbose (printf "numerized = ~A~%" numerized))
 	(define bvv (generate-boolvecvec (length inputs-list)))
-;	(if-verbose (printf "bvv = ~A~%" bvv))
 	(vector-map
 	  (lambda (boolvec) (evaluate-numerized-boolfun numerized boolvec))
 	  bvv
@@ -384,7 +353,6 @@
 (provide (contract-out
 		   [gather-input (list? . -> . list?)]
 		   [validate-input (list? . -> . list?)]
-		  ; [valid-input-symbol? (symbol? . -> . boolean?)]
 ))
 
 
@@ -552,8 +520,6 @@
   (define out-symbol (list-ref definition 0))
   (define boolfun (list-ref definition 1))
   (define list-ins (build-list-ins boolfun))
-;  (if-verbose  (printf "list-ins = ~A~%" list-ins))
-;  (if-verbose  (printf "(make-outfun ~A): (length list-ins) = ~A~%" definition (length list-ins)))
   (define boolvecvec (generate-boolvecvec (length list-ins)))
   (define numerized (numerize-boolfun boolfun list-ins))
   (define truthtable (build-truthtable boolfun list-ins))
@@ -674,17 +640,6 @@
 
 
 
-;	(printf "~%building list of outs~%")
-;	(define list-outs
-;	  (build-list-outs
-;		valid-input
-;		) )
-;	(define (display-outs)
-;		(for ((o list-outs))
-;			(display o)
-;			(newline)
-;		 )
-;	 )
 	(printf "~%building list of globalized outs~%")
 	(define list-globalized-outs
 	  (build-list-outs-globalized
@@ -697,21 +652,8 @@
 		 )
 	 )
 
-;	(printf "~%globalized outs truthtables:~%")
-;	(cond (verbose?
-;		(for ((o list-globalized-outs))
-;			(outfun-print-truthtable o)
-;		)
-;	))
-;
 	(printf "~%  list-ins: ~A~%" list-ins)
 
-;	(printf "~%outs:~%")
-;	(cond (verbose?
-;		(for ((o list-outs))
-;			(outfun-print-numerized-from-global o)
-;		)
-;	))
 	(printf "~%globalized outs:~%")
 	(cond (verbose?
 		(for ((o list-globalized-outs))
@@ -726,9 +668,3 @@
 		  list-globalized-outs )
 		"\n" ) )
 )
-
-
-
-
-
-
