@@ -3,7 +3,7 @@
 (require racket/contract)
 (require errortrace)
 
-(define verbose? #t)
+(define verbose? #f)
 (define (if-verbose stuff)
   ;TODO make it work as expected
   ;trzeba by tu jakieś makro zrobić
@@ -171,9 +171,18 @@
 
 (define (list->tsv l)
 	;generates a line of tab-separated-values 
-	(string-join (map (lambda (v) (format "~A" v)) l)
-		[	"\t"
-			#:after-last "\n" ] ) )
+	;TODO check this. it seems that it outputs unneeded parenthesis for some reason
+	;(#f      #f      #f      #f      #f
+	;...
+	; #t      #t      #t      #t      #t
+	;)
+	(string-join
+	  (map
+		(lambda (v) (format "~A\t" v))
+		l)
+		#:after-last "\n"
+	 )
+ )
 
 
 
@@ -577,9 +586,32 @@
 
 (define (outfun-print-truthtable_tsv outfun)
 ;TODO this
-	(define header (list->tsv (outfun-vector-vectors-bools outfun)))
-	;(lambda 
-	(error "TODO this")
+	(define header (list->tsv (outfun-list-inputs outfun)))
+
+	(define vector-outbool (outfun-truthtable outfun))
+	(define vector-vector-input (outfun-vector-vectors-bools outfun))
+	(define (append-value-to-vector
+			  vec
+			  val )
+	  ; vector of vectors(length 1) containing the value
+	  (vector-append
+		vec
+		(vector val) )
+	 )
+	(define list-of-rowvectors (vector->list
+		(vector-map
+		  append-value-to-vector
+		  vector-vector-input
+		  vector-outbool ) ))
+	(define list-of-rowlists
+	  (map
+		vector->list
+		list-of-rowvectors ) )
+	(define list-of-rows
+	  (map
+		list->tsv
+		list-of-rowlists ) )
+	(printf "~%~A~%~A~%" header list-of-rows)
 )
 
 
@@ -667,4 +699,13 @@
 		  format-outfun
 		  list-globalized-outs )
 		"\n" ) )
+	(newline)
+	(newline)
+
+	(outfun-print-truthtable_tsv (car list-globalized-outs ))
+	;(cond (verbose?
+	;	(for ((o  list-globalized-outs))
+	;		(outfun-print-truthtable_tsv o)
+	;	)
+	;))
 )
