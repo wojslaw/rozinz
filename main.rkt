@@ -666,7 +666,7 @@
 		(lambda (def) (list-ref def 1))
 		deflist)
 	  )
-	(define list-ins  (build-list-ins  (map cdr valid-input))) ;; TODO (easy) take only boolfuns when building list of insymbols
+	(define list-ins  (build-list-ins  (map cdr valid-input))) ;; TODO take only boolfuns when building list of insymbols
 	(printf "~%  list-ins: ~A~%" list-ins)
 	(newline)
 
