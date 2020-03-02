@@ -453,7 +453,8 @@
 
 
 (define (valid-input-string? s)
-;; TODO make it less strict, that is allow any symbol that isn't a symbol of boolfun
+;; a lenient version is provided in the form of
+;; `(allowed-symbol? ... )` down below
   (and
 	(string? s)
 	(equal?
@@ -462,6 +463,12 @@
 	(string->number (substring s 1))
   )
 )
+
+(define (allowed-symbol?
+		  s
+		  disallowed-symbols )
+	(not (member s disallowed-symbols)) )
+
 
 (define (valid-input-symbol? s)
   (valid-input-string? (symbol->string s)) )
