@@ -3,6 +3,25 @@
 (require racket/contract)
 (require errortrace)
 
+(require racket/include)
+(require "kod-stanowiska.rkt")
+
+;;TODO : count number of basic boolean functions(AND, OR, NOT, etc.
+
+;; look at:
+;; https://codereview.stackexchange.com/questions/223123/count-frequencies-of-symbols-in-a-list
+;; This is the typical situation where a hash table that maps elements to their frequency count is particularly well suited.
+;; 
+;; (defun occurrences (lst)
+;;   (let ((table (make-hash-table)))                   ; [1]
+;;     (loop for e in lst
+;;           do (incf (gethash e table 0)))             ; [2]
+;;     (sort (loop for k being the hash-key of table    ; [3]
+;;                   using (hash-value v)
+;;                 collect (cons k v))                         
+;;           #'>= :key #'cdr)))                         ; [4]
+
+
 (define verbose? #f)
 (define (if-verbose stuff)
   ;TODO make it work as expected
@@ -360,42 +379,12 @@
 
 
 (provide (contract-out
-		   [gather-input (list? . -> . list?)]
 		   [validate-input (list? . -> . list?)]
 ))
 
 
 
-(define (gather-input input-info)
-  (printf "Uwaga! input jest predefiniowany w funkcji (gather-input ...)")
-  ;; TODO: gather from a file or something, instead of being preprogrammed
-  ;; gather from a file? for now, let's just spit out a bunch of ASTs
-  '(
-	(o1
-		(and
-			(or i1 i2)
-			(or i3 i4)
-		 )
-	)
-	(o2
-	  (and
-		(or  i4 i2 i8)
-		(or  i1 i2 i3)
-		(or
-		  (and i1  i2  i3  i4)
-		  (and i5  i6  i7  i8)
-		  ;(and i9 i10 i11 i12)
-		  )
-	   )
-	)
-	(o3
-	  (and
-		i1
-		(or i1 i2 i3)
-		i3)
-	)
-  )
-)
+
 
 
 (define (valid-boolvar-string? s)
@@ -653,10 +642,33 @@
 
 
 
+
+;;;;
+;;;; OPTIMIZER
+;;;;
+
+(define (find-repeating-values-in-2-list ;;TODO
+		  l1
+		  l2 )
+  (error "TODO find-repeating-inputs-in-2-outfuns")
+  ;; 1. remove non-duplicates
+  (define list-nodupes
+	(remove-duplicates (append l1 l2)) )
+  (check-duplicates l1 l2)
+	
+ )
+
+
 (define (optimize-outs outs-list)
   ;TODO - this is the most important function where magic should happen xD
   (printf "TODO: code for (optimize-outs ...)")
 )
+
+
+
+
+
+
 
 
 
